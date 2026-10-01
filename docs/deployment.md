@@ -185,6 +185,7 @@ server {
   server_name cairn-staging.codenav.dev;
   ssl_certificate     /etc/letsencrypt/live/cairn-staging.codenav.dev/fullchain.pem;
   ssl_certificate_key /etc/letsencrypt/live/cairn-staging.codenav.dev/privkey.pem;
+  include snippets/cloudflare-only.conf;
 
   client_max_body_size 64m;              # voice captures
 
@@ -199,6 +200,13 @@ server {
   }
 }
 ```
+
+`/etc/nginx/snippets/cloudflare-only.conf` is one `allow` line per range from
+<https://www.cloudflare.com/ips-v4> and `/ips-v6`, then `deny all;`. Cairn trusts
+`cf-connecting-ip` for rate limits, and the origin's address is public, so
+without it anyone could reach nginx directly and send a forged header.
+Certificate renewal is unaffected: Let's Encrypt validates through Cloudflare.
+Refresh the ranges when Cloudflare changes them.
 
 ---
 
