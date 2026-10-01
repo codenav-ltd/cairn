@@ -9,6 +9,11 @@ export const ApiHealth = z.object({
 })
 export type ApiHealth = z.infer<typeof ApiHealth>
 
+export const ApiErrorBody = z.object({
+  error: z.object({ code: z.string(), message: z.string() }),
+})
+export type ApiErrorBody = z.infer<typeof ApiErrorBody>
+
 export const SiteHealth = z.object({
   status: z.enum(['ok', 'degraded']),
   version: z.string(),
