@@ -1,0 +1,224 @@
+name: Deploy
+
+# Pushing to main deploys production. deploy-staging.yml calls this same file
+# for staging: a staging deploy is only a rehearsal if it runs the steps
+# production will run. See docs/deployment.md.
+#
+# `environment` is required on workflow_call and has no default, so a caller
+# that forgets it cannot deploy dev to production. The `|| 'production'`
+# fallbacks are for the push trigger, where the inputs context is empty.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
+      tag:
+        description: 'Redeploy an existing image, e.g. sha-<commit>. Empty builds this ref.'
+        type: string
+        default: ''
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+
+# One queue per environment. Queue rather than cancel: a cancelled run could
+# stop between migrate and up. Callers must not declare this group too, or
+# they would deadlock waiting on their own callee.
+concurrency:
+  group: deploy-cairn-${{ inputs.environment || 'production' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    if: ${{ !inputs.tag }}
+    uses: ./.github/workflows/images.yml
+
+  deploy:
+    needs: images
+    if: ${{ always() && !cancelled() && (needs.images.result == 'success' || needs.images.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment || 'production' }}
+      url: ${{ steps.target.outputs.url }}
+    outputs:
+      url: ${{ steps.target.outputs.url }}
+      running: ${{ steps.running.outputs.tag }}
+      failed_step: ${{ steps.result.outputs.failed_step }}
+    env:
+      ENVIRONMENT: ${{ inputs.environment || 'production' }}
+      TAG: ${{ inputs.tag || format('sha-{0}', github.sha) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: docker/compose.yml
+          sparse-checkout-cone-mode: false
+
+      # Both values reach a remote shell, so they are whitelisted rather than
+      # interpolated as given.
+      - id: target
+        name: Resolve target
+        run: |
+          case "$ENVIRONMENT" in
+            production) dir=cairn;         url=https://cairn.codenav.dev ;;
+            staging)    dir=cairn-staging; url=https://cairn-staging.codenav.dev ;;
+            *) echo "unknown environment: $ENVIRONMENT" >&2; exit 1 ;;
+          esac
+          if ! [[ "$TAG" =~ ^sha-[0-9a-f]{40}$ ]]; then
+            echo "tag must be sha-<full commit sha>, got: $TAG" >&2
+            exit 1
+          fi
+          {
+            echo "dir=$dir"
+            echo "url=$url"
+            echo "version=${TAG#sha-}"
+          } >> "$GITHUB_OUTPUT"
+
+      - id: ssh
+        name: Set up SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host target
+            HostName $SSH_HOST
+            User $SSH_USERNAME
+            Port ${SSH_PORT:-22}
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ServerAliveInterval 15
+          EOF
+
+      - id: running
+        name: Read running version
+        env:
+          DIR: ${{ steps.target.outputs.dir }}
+        run: |
+          current=$(ssh target "sed -n 's/^current=//p' ~/docker/$DIR/.release 2>/dev/null" || true)
+          [[ "$current" =~ ^sha-[0-9a-f]{40}$ ]] || current=""
+          echo "tag=$current" >> "$GITHUB_OUTPUT"
+
+      - id: upload
+        name: Upload compose.yml
+        env:
+          DIR: ${{ steps.target.outputs.dir }}
+        run: scp docker/compose.yml "target:docker/$DIR/compose.yml"
+
+      # Pulling does not touch running containers.
+      - id: pull
+        name: Pull images
+        env:
+          DIR: ${{ steps.target.outputs.dir }}
+        run: ssh target "cd ~/docker/$DIR && CAIRN_TAG=$TAG docker compose pull --quiet"
+
+      # The new image migrates while the old containers keep serving. If this
+      # fails the deploy stops here and nothing has been switched.
+      - id: migrate
+        name: Migrate
+        env:
+          DIR: ${{ steps.target.outputs.dir }}
+        run: ssh target "cd ~/docker/$DIR && CAIRN_TAG=$TAG docker compose run --rm api node dist/main.mjs migrate"
+
+      # CAIRN_TAG is persisted in .env so that a later hand-run
+      # `docker compose up` keeps the deployed version.
+      - id: up
+        name: Switch to the new version
+        env:
+          DIR: ${{ steps.target.outputs.dir }}
+        run: |
+          ssh target bash -s -- "$DIR" "$TAG" <<'EOF'
+          set -euo pipefail
+          cd ~/docker/"$1"
+          if grep -q '^CAIRN_TAG=' .env; then
+            sed -i "s/^CAIRN_TAG=.*/CAIRN_TAG=$2/" .env
+          else
+            echo "CAIRN_TAG=$2" >> .env
+          fi
+          docker compose up -d --wait --wait-timeout 120 --remove-orphans
+          EOF
+
+      # Through nginx and Cloudflare, not just the container: green means the
+      # public host is serving the new version.
+      - id: health
+        name: Health check
+        env:
+          URL: ${{ steps.target.outputs.url }}
+          VERSION: ${{ steps.target.outputs.version }}
+        run: |
+          for _ in $(seq 1 30); do
+            body=$(curl -fsS --max-time 5 "$URL/healthz" 2>/dev/null || true)
+            if jq -e --arg v "$VERSION" '.status == "ok" and .version == $v and .api.version == $v' >/dev/null 2>&1 <<< "$body"; then
+              echo "$body"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "$URL/healthz never reported $VERSION; last response: $body" >&2
+          exit 1
+
+      - id: record
+        name: Record release
+        env:
+          DIR: ${{ steps.target.outputs.dir }}
+          RUNNING: ${{ steps.running.outputs.tag }}
+        run: ssh target "printf 'current=%s\nprevious=%s\n' '$TAG' '$RUNNING' > ~/docker/$DIR/.release"
+
+      - id: result
+        name: Find the failed step
+        if: always()
+        run: |
+          for s in \
+            "resolve:${{ steps.target.outcome }}" \
+            "ssh:${{ steps.ssh.outcome }}" \
+            "running:${{ steps.running.outcome }}" \
+            "upload:${{ steps.upload.outcome }}" \
+            "pull:${{ steps.pull.outcome }}" \
+            "migrate:${{ steps.migrate.outcome }}" \
+            "up:${{ steps.up.outcome }}" \
+            "health:${{ steps.health.outcome }}" \
+            "record:${{ steps.record.outcome }}"; do
+            if [ "${s#*:}" = failure ]; then
+              echo "failed_step=${s%%:*}" >> "$GITHUB_OUTPUT"
+              break
+            fi
+          done
+
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+  # After the health check, not after up: green means the new version answered
+  # through the public host. always() so failures report too.
+  notify:
+    needs: [images, deploy]
+    if: ${{ always() && !cancelled() }}
+    uses: ./.github/workflows/notify-telegram.yml
+    with:
+      ok: ${{ needs.deploy.result == 'success' }}
+      environment: ${{ inputs.environment || 'production' }}
+      version: ${{ inputs.tag || format('sha-{0}', github.sha) }}
+      failed_step: ${{ needs.images.result == 'failure' && 'images' || needs.deploy.outputs.failed_step }}
+      running: ${{ needs.deploy.outputs.running }}
+      url: ${{ needs.deploy.outputs.url }}
+    secrets: inherit

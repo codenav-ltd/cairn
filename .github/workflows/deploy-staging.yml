@@ -1,0 +1,23 @@
+name: Deploy (staging)
+
+# Pushing to dev deploys cairn-staging.codenav.dev. All the steps live in
+# deploy.yml; this file only holds the trigger and the one value that differs.
+#
+# No concurrency here on purpose: deploy.yml already queues per environment,
+# and a caller holding the group its callee waits on would deadlock.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: staging
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
