@@ -12,6 +12,10 @@ export default defineNuxtConfig({
     '/studio/**': { ssr: false },
   },
   i18n: {
+    // Runtime config is frozen once the server starts, so this cannot be
+    // derived from CAIRN_PUBLIC_URL in code. compose.yml sets
+    // NUXT_PUBLIC_I18N_BASE_URL from it instead.
+    baseUrl: 'http://localhost:3000',
     defaultLocale: 'en',
     strategy: 'prefix_except_default',
     detectBrowserLanguage: false,
