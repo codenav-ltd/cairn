@@ -205,10 +205,16 @@ export function createAuth({
             if (token) {
               const invalid = reject(
                 'invitation_invalid',
-                'This invitation has expired, was already used, or is for a different email address.',
+                'This invitation has expired or was already used.',
               )
               const pending = await invitations.findPending(token)
-              if (!pending || (pending.email && pending.email !== email)) throw invalid
+              if (!pending) throw invalid
+              if (pending.email && pending.email !== email) {
+                throw reject(
+                  'invitation_email_mismatch',
+                  'This invitation was sent to a different email address.',
+                )
+              }
               if (pending.role === 'owner' && (await invitations.ownerExists())) {
                 throw reject('owner_exists', 'This site already has an owner.')
               }
