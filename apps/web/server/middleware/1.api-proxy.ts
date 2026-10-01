@@ -17,7 +17,10 @@ export default defineEventHandler((event) => {
   const forwarded = clientIpHeader && getRequestHeader(event, clientIpHeader)?.split(',')[0]?.trim()
   const ip = forwarded || event.node.req.socket?.remoteAddress || ''
 
+  // Redirects go to the browser: following them here would resolve against the
+  // api origin and drop the cookies set along the way (OAuth, magic links).
   return proxyRequest(event, new URL(url.pathname + url.search, apiOrigin).href, {
     headers: { [CLIENT_IP_HEADER]: ip },
+    fetchOptions: { redirect: 'manual' },
   })
 })

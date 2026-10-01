@@ -149,6 +149,9 @@ jobs:
           curl -fsS -b "$jar" "$site/account" -D - -o /dev/null | grep -qi '^cache-control: private, no-store'
           code=$(curl -s -o /dev/null -w '%{http_code}' -b "$jar" -X PATCH -H 'origin: https://evil.test' -H 'content-type: application/json' -d '{"name":"x"}' "$site/api/me")
           test "$code" = 403
+          # OAuth callbacks and magic links redirect; web must hand the redirect to the browser.
+          redirect=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$site/api/auth/callback/github?code=x&state=y")
+          [[ "$redirect" == "302 $site/api/auth/error?error="* ]]
 
       - name: Staging is not indexable
         run: |
