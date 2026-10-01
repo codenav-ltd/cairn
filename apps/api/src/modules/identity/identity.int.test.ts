@@ -67,7 +67,7 @@ describe.skipIf(!testDatabaseUrl)('identity', () => {
     const token = await invite('member', 'right@example.com')
     const { signUp } = await join(token, 'wrong@example.com')
     expect(signUp.status).toBe(403)
-    expect(signUp.json.code).toBe('INVITATION_INVALID')
+    expect(signUp.json.code).toBe('INVITATION_EMAIL_MISMATCH')
   })
 
   it('refuses a second owner invitation', async () => {

@@ -77,7 +77,7 @@ async function switchAccount() {
           <p v-if="preview.email" class="text-meta text-muted">
             {{ t('auth.invite.useBoundEmail') }}
           </p>
-          <SignUpForm :submit-label="t('auth.invite.accept')" :return-to="route.fullPath" />
+          <SignUpForm :submit-label="t('auth.invite.accept')" :return-to="route.path" />
           <p class="border-t border-line pt-6 text-meta text-muted">
             {{ t('auth.signUp.haveAccount') }}
             <NuxtLink :to="localePath('/sign-in')" class="text-link">{{

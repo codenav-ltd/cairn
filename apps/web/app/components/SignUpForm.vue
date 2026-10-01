@@ -6,6 +6,11 @@ const route = useRoute()
 const localePath = useLocalePath()
 const { site, me, refresh } = useSession()
 const { pending, error, run } = useAction()
+const errorMessage = useErrorMessage()
+
+// GitHub sign-up failures come back as ?error=CODE on returnTo.
+const returned = [route.query.error].flat()[0]
+if (typeof returned === 'string') error.value = errorMessage({ code: returned })
 
 const name = ref('')
 const email = ref('')
