@@ -329,8 +329,12 @@ this public repository.
 
 ## 6. Backups
 
-- Production: nightly `pg_dump` of the database plus the media volume, written to
-  `~/backups/cairn/`, keeping 14 days. Off-site copies are future work.
+- Production: `docker/backup.sh`, copied into the instance directory, runs from
+  the `cairn-backup.timer` systemd timer daily at 19:30 UTC (03:30 in UTC+8);
+  the host has no cron, and its other scheduled jobs are systemd timers too. It
+  writes a `pg_dump` custom-format dump to `~/backups/cairn/` and keeps 14 days;
+  `journalctl -u cairn-backup` shows each run. The media volume joins the
+  backup once uploads exist. Off-site copies are future work.
 - Staging: no backups. It can be reset from fixtures at any time.
 
 ---
@@ -349,4 +353,30 @@ approval, before the first deploy:
    secrets, and add the Telegram secrets to the repository.
 6. Run `postgres-image.yml` once on `main` and once on `dev`, then make the
    `cairn-api`, `cairn-web` and `cairn-postgres` packages public.
-7. Add the backup cron job for production.
+7. Install the backup timer for production:
+
+   ```ini
+   # /etc/systemd/system/cairn-backup.service
+   [Unit]
+   Description=Back up the Cairn production database
+   Requires=docker.service
+   After=docker.service
+
+   [Service]
+   Type=oneshot
+   User=ubuntu
+   ExecStart=/home/ubuntu/docker/cairn/backup.sh
+
+   # /etc/systemd/system/cairn-backup.timer
+   [Unit]
+   Description=Nightly Cairn production backup
+
+   [Timer]
+   OnCalendar=*-*-* 19:30:00 UTC
+   Persistent=true
+
+   [Install]
+   WantedBy=timers.target
+   ```
+
+   then `sudo systemctl enable --now cairn-backup.timer`.
