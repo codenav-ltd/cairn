@@ -36,13 +36,13 @@ therefore needs exactly one upstream, whether that's Caddy, nginx or a tunnel.
 
 ### 1.2 Services
 
-| Service    | Image             | Notes                                            |
-|------------|-------------------|--------------------------------------------------|
-| `web`      | `cairn-web`       | Nuxt SSR on port 3000; the only published port   |
-| `api`      | `cairn-api`       | `CAIRN_ROLES=api`                                |
-| `worker`   | `cairn-api`       | `CAIRN_ROLES=worker`                             |
-| `postgres` | `cairn-postgres`  | Postgres 18 + pgvector + PGroonga; named volume  |
-| `caddy`    | `caddy:2`         | Profile `caddy` only                             |
+| Service    | Image            | Notes                                           |
+| ---------- | ---------------- | ----------------------------------------------- |
+| `web`      | `cairn-web`      | Nuxt SSR on port 3000; the only published port  |
+| `api`      | `cairn-api`      | `CAIRN_ROLES=api`                               |
+| `worker`   | `cairn-api`      | `CAIRN_ROLES=worker`                            |
+| `postgres` | `cairn-postgres` | Postgres 18 + pgvector + PGroonga; named volume |
+| `caddy`    | `caddy:2`        | Profile `caddy` only                            |
 
 Media is stored in a named volume unless `STORAGE_DRIVER=s3`.
 
@@ -50,15 +50,15 @@ Media is stored in a named volume unless `STORAGE_DRIVER=s3`.
 
 ## 2. codenav environments
 
-| | Production | Staging |
-|---|---|---|
-| Branch | `main` | `dev` |
-| Host | `cairn.codenav.dev` | `cairn-staging.codenav.dev` |
-| Compose project | `cairn` | `cairn-staging` |
-| Instance directory | `~/docker/cairn` | `~/docker/cairn-staging` |
-| Published port | `127.0.0.1:3890` | `127.0.0.1:3891` |
-| Database | own `postgres` container and volume | own `postgres` container and volume |
-| `CAIRN_ENV` | `production` | `staging` |
+|                    | Production                          | Staging                             |
+| ------------------ | ----------------------------------- | ----------------------------------- |
+| Branch             | `main`                              | `dev`                               |
+| Host               | `cairn.codenav.dev`                 | `cairn-staging.codenav.dev`         |
+| Compose project    | `cairn`                             | `cairn-staging`                     |
+| Instance directory | `~/docker/cairn`                    | `~/docker/cairn-staging`            |
+| Published port     | `127.0.0.1:3890`                    | `127.0.0.1:3891`                    |
+| Database           | own `postgres` container and volume | own `postgres` container and volume |
+| `CAIRN_ENV`        | `production`                        | `staging`                           |
 
 Both run on the shared codenav server (Ubuntu 24.04, **arm64**) behind the
 existing nginx + certbot + Cloudflare setup. Host names have three labels on
@@ -81,14 +81,14 @@ Staging shares the machine with production and nothing else:
 
 Behaviour that differs is keyed on one variable, never on host names:
 
-| Concern            | Staging behaviour                                                |
-|--------------------|------------------------------------------------------------------|
-| Indexing           | `X-Robots-Tag: noindex, nofollow` on every response; `robots.txt` disallows all |
-| AI surfaces        | `llms.txt` and `llms-full.txt` return 404                        |
-| Outbound mail      | Delivered only to addresses in `CAIRN_MAIL_ALLOWLIST`; others are logged and dropped |
-| AI spend           | Hard monthly cap from `CAIRN_AI_BUDGET_USD`                      |
-| Federation         | Disabled (when it exists)                                        |
-| UI                 | A persistent "Staging" marker in the header                      |
+| Concern       | Staging behaviour                                                                    |
+| ------------- | ------------------------------------------------------------------------------------ |
+| Indexing      | `X-Robots-Tag: noindex, nofollow` on every response; `robots.txt` disallows all      |
+| AI surfaces   | `llms.txt` and `llms-full.txt` return 404                                            |
+| Outbound mail | Delivered only to addresses in `CAIRN_MAIL_ALLOWLIST`; others are logged and dropped |
+| AI spend      | Hard monthly cap from `CAIRN_AI_BUDGET_USD`                                          |
+| Federation    | Disabled (when it exists)                                                            |
+| UI            | A persistent "Staging" marker in the header                                          |
 
 All absolute URLs (auth callbacks, email links, feeds, OG tags) are built from
 `CAIRN_PUBLIC_URL`. The frontend calls the api same-origin. No host name is
@@ -140,13 +140,13 @@ server {
 
 ### 3.1 Workflows
 
-| File                      | Trigger                         | Runs on            | Does                                           |
-|---------------------------|---------------------------------|--------------------|------------------------------------------------|
-| `ci.yml`                  | pull requests, pushes           | GitHub-hosted      | Lint, typecheck, unit and integration tests    |
-| `images.yml`              | `workflow_call`, tags `v*`      | GitHub-hosted (amd64 + arm64) | Build and push images to GHCR       |
-| `deploy.yml`              | push to `main`, dispatch, `workflow_call` | GitHub-hosted | Images → migrate → up → health check → notify |
-| `deploy-staging.yml`      | push to `dev`, dispatch         | —                  | Calls `deploy.yml` with `environment: staging` |
-| `notify-telegram.yml`     | `workflow_call`                 | GitHub-hosted      | Sends the deploy result to Telegram            |
+| File                  | Trigger                                   | Runs on                       | Does                                           |
+| --------------------- | ----------------------------------------- | ----------------------------- | ---------------------------------------------- |
+| `ci.yml`              | pull requests, pushes                     | GitHub-hosted                 | Lint, typecheck, unit and integration tests    |
+| `images.yml`          | `workflow_call`, tags `v*`                | GitHub-hosted (amd64 + arm64) | Build and push images to GHCR                  |
+| `deploy.yml`          | push to `main`, dispatch, `workflow_call` | GitHub-hosted                 | Images → migrate → up → health check → notify  |
+| `deploy-staging.yml`  | push to `dev`, dispatch                   | —                             | Calls `deploy.yml` with `environment: staging` |
+| `notify-telegram.yml` | `workflow_call`                           | GitHub-hosted                 | Sends the deploy result to Telegram            |
 
 Staging runs the same steps as production. `deploy-staging.yml` only holds the
 trigger and the one value that differs. A staging deploy is only a rehearsal
@@ -264,10 +264,10 @@ read from `.release`. That way the message alone answers "is the site down?".
 
 ## 5. Secrets
 
-| Secret               | Scope                     |
-|----------------------|---------------------------|
+| Secret                                            | Scope                                |
+| ------------------------------------------------- | ------------------------------------ |
 | `SSH_HOST`, `SSH_USERNAME`, `SSH_KEY`, `SSH_PORT` | environments `production`, `staging` |
-| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | repository        |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`          | repository                           |
 
 Image pushes use the workflow's `GITHUB_TOKEN`. Images are public, so the
 server pulls without credentials.
