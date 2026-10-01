@@ -1,0 +1,98 @@
+# Sends the result of a deploy to Telegram. Delivery errors are swallowed on
+# purpose: a notification must never turn a finished deploy red.
+#
+# Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID; if either is empty the
+# job exits 0.
+
+name: Notify Telegram
+
+on:
+  workflow_call:
+    inputs:
+      ok:
+        description: Whether the deploy succeeded, health check included
+        type: boolean
+        required: true
+      environment:
+        description: staging or production
+        type: string
+        required: true
+      version:
+        description: The image tag that was being deployed
+        type: string
+        required: true
+      failed_step:
+        description: The first step that failed, empty on success
+        type: string
+        default: ''
+      running:
+        description: The tag that was serving before this deploy
+        type: string
+        default: ''
+      url:
+        type: string
+        default: ''
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OK: ${{ inputs.ok }}
+          ENV_NAME: ${{ inputs.environment }}
+          VERSION: ${{ inputs.version }}
+          FAILED_STEP: ${{ inputs.failed_step }}
+          RUNNING: ${{ inputs.running }}
+          URL: ${{ inputs.url }}
+          SUBJECT: ${{ github.event.head_commit.message }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
+            echo "Telegram secrets not set, skipping"
+            exit 0
+          fi
+
+          short() { local v="${1#sha-}"; echo "${v:0:7}"; }
+
+          lines=()
+          if [ "$OK" = "true" ]; then
+            lines+=("✅ Cairn ${ENV_NAME} 已部署")
+          else
+            lines+=("❌ Cairn ${ENV_NAME} 部署失败：${FAILED_STEP:-unknown}")
+          fi
+          lines+=("${REPO} @ ${REF} · $(short "$VERSION") by ${ACTOR}")
+          [ -n "$SUBJECT" ] && lines+=("${SUBJECT%%$'\n'*}")
+
+          # Say what is serving now, so the message alone answers "is it down?".
+          if [ "$OK" = "true" ]; then
+            [ -n "$URL" ] && lines+=("$URL")
+          else
+            case "$FAILED_STEP" in
+              up|health) lines+=("容器已开始切换，线上状态未确认，请检查服务器") ;;
+              record)    lines+=("新版本已在线上服务，但 .release 未能更新") ;;
+              *)
+                if [ -n "$RUNNING" ]; then
+                  lines+=("线上仍在运行 $(short "$RUNNING")")
+                else
+                  lines+=("线上没有已记录的版本")
+                fi
+                ;;
+            esac
+          fi
+          lines+=("$RUN_URL")
+
+          text=$(printf '%s\n' "${lines[@]}")
+
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${text}" \
+            --data-urlencode "disable_web_page_preview=true" \
+            || echo "Telegram notify failed"
