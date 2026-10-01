@@ -1,0 +1,27 @@
+{
+  "name": "@cairnhq/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --dotenv ../../.env",
+    "build": "nuxt build",
+    "start": "node .output/server/index.mjs",
+    "typecheck": "nuxt typecheck",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@cairnhq/contracts": "workspace:*",
+    "@cairnhq/ui": "workspace:*",
+    "@nuxtjs/i18n": "^10.6.0",
+    "nuxt": "^4.5.2",
+    "vue": "^3.5.43",
+    "vue-router": "^5.3.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.3",
+    "vue-tsc": "^3.3.11"
+  }
+}
