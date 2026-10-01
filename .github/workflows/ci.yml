@@ -20,6 +20,22 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: ghcr.io/codenav-ltd/cairn-postgres:18
+        env:
+          POSTGRES_USER: cairn
+          POSTGRES_PASSWORD: cairn
+          POSTGRES_DB: cairn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cairn -d cairn"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      CAIRN_TEST_DATABASE_URL: postgres://cairn:cairn@localhost:5432/cairn
     steps:
       - uses: actions/checkout@v7
 
@@ -90,6 +106,7 @@ jobs:
           CAIRN_POSTGRES_TAG=ci
           CAIRN_HTTP_BIND=127.0.0.1:3000
           CAIRN_AUTO_MIGRATE=true
+          CAIRN_MAIL_DRIVER=log
           EOF
           docker compose up -d --wait --wait-timeout 120 --pull never
 
@@ -115,6 +132,23 @@ jobs:
 
       - name: Migrate command is idempotent
         run: docker compose run --rm api node dist/main.mjs migrate
+
+      - name: Owner joins through the web origin
+        run: |
+          site=http://localhost:3000
+          jar=$(mktemp)
+          req() { curl -fsS -b "$jar" -c "$jar" -H "origin: $site" -H 'content-type: application/json' "$@"; }
+          url=$(docker compose exec -T api node dist/main.mjs invite --role owner --email owner@example.com < /dev/null | grep -o 'http[^ ]*/invite/[A-Za-z0-9_-]*')
+          # The server-rendered invite page hands the api's invitation cookie to the browser.
+          req "$site/invite/${url##*/}" -o /dev/null
+          grep -q cairn_invite "$jar"
+          req -d '{"name":"Owner","email":"owner@example.com","password":"correct horse battery"}' "$site/api/auth/sign-up/email" -o /dev/null
+          req "$site/api/me" | jq -e '.role == "owner" and .status == "active" and .emailVerified'
+          req -X PATCH -d '{"site":{"title":"Smoke Garden"}}' "$site/api/settings" | jq -e '.site.title == "Smoke Garden"'
+          curl -fsS "$site/api/settings/public" | jq -e '.title == "Smoke Garden" and .registration == "invite"'
+          curl -fsS -b "$jar" "$site/account" -D - -o /dev/null | grep -qi '^cache-control: private, no-store'
+          code=$(curl -s -o /dev/null -w '%{http_code}' -b "$jar" -X PATCH -H 'origin: https://evil.test' -H 'content-type: application/json' -d '{"name":"x"}' "$site/api/me")
+          test "$code" = 403
 
       - name: Staging is not indexable
         run: |

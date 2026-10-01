@@ -39,10 +39,11 @@
 
   /* Type */
   --face-display:
-    'Bricolage Grotesque', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+    'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Noto Sans SC', 'PingFang SC',
+    'Microsoft YaHei', system-ui, sans-serif;
   --face-text:
-    'Atkinson Hyperlegible Next', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui,
-    sans-serif;
+    'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', 'Noto Sans SC',
+    'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
   --face-mono: 'Commit Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
   --t-micro: 12px;

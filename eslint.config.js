@@ -36,8 +36,21 @@ export default defineConfig(
     rules: { 'no-undef': 'off' },
   },
   {
-    files: ['apps/web/app/pages/**/*.vue', 'apps/web/app/app.vue'],
+    // Nuxt names these from their route, layout or directory prefix
+    // (components/account/Profile.vue is <AccountProfile>, ui's Button is <UiButton>).
+    files: [
+      'apps/web/app/pages/**/*.vue',
+      'apps/web/app/layouts/*.vue',
+      'apps/web/app/components/*/*.vue',
+      'apps/web/app/app.vue',
+      'packages/ui/src/components/*.vue',
+    ],
     rules: { 'vue/multi-word-component-names': 'off' },
+  },
+  {
+    // Optional props typed with TypeScript are undefined by default.
+    files: ['**/*.vue'],
+    rules: { 'vue/require-default-prop': 'off' },
   },
   prettier,
 )

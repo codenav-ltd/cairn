@@ -136,10 +136,10 @@ Interaction states are translucent overlays, so one token works on any surface:
 | Mono    | Commit Mono                                  | Spec line, Trail labels, code, timestamps, keyboard hints |
 | CJK     | Noto Sans SC → PingFang SC → Microsoft YaHei | Chinese text in every role                                |
 
-All faces are OFL-licensed and self-hosted through `@nuxt/fonts`, with
-metric-matched fallbacks to keep CLS near zero. CJK fonts are sliced with
-`cn-font-split` into `unicode-range` chunks and only requested when a page
-contains CJK text.
+All faces are OFL-licensed and self-hosted from Fontsource packages
+(`packages/ui/src/fonts.css`), split by `unicode-range` so a page downloads only
+the scripts it uses. Chinese currently uses the system CJK faces; a sliced Noto
+Sans SC (`cn-font-split`) and metric-matched fallbacks come later.
 
 Bricolage Grotesque is used at a slightly condensed width (`wdth` 90) and weight
 650 for titles. That treatment is the typographic signature; do not use the

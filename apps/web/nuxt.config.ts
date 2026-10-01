@@ -1,15 +1,29 @@
 import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath } from 'node:url'
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-10-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/i18n'],
-  css: ['~/assets/css/main.css'],
+  css: ['@cairnhq/ui/fonts.css', '~/assets/css/main.css'],
+  components: {
+    dirs: [
+      {
+        path: fileURLToPath(new URL('../../packages/ui/src/components', import.meta.url)),
+        prefix: 'Ui',
+      },
+      '~/components',
+    ],
+  },
+  imports: {
+    presets: [{ from: '@cairnhq/ui', imports: ['useToast'] }],
+  },
   vite: {
     plugins: [tailwindcss()],
   },
   routeRules: {
     '/studio/**': { ssr: false },
+    '/zh/studio/**': { ssr: false },
   },
   i18n: {
     // Runtime config is frozen once the server starts, so this cannot be

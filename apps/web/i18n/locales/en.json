@@ -4,5 +4,361 @@
   },
   "locale": {
     "switch": "Language"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "copied": "Link copied",
+    "copy": "Copy link",
+    "done": "Done",
+    "email": "Email",
+    "goHome": "Go to the home page",
+    "hidePassword": "Hide password",
+    "name": "Name",
+    "notifications": "Notifications",
+    "optional": "optional",
+    "or": "or",
+    "password": "Password",
+    "save": "Save changes",
+    "showPassword": "Show password"
+  },
+  "nav": {
+    "label": "Site",
+    "menu": "Account menu",
+    "account": "Account",
+    "studio": "Studio",
+    "settings": "Settings",
+    "members": "Members",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signOutFailed": "Couldn’t sign out"
+  },
+  "roles": {
+    "owner": "Owner",
+    "editor": "Editor",
+    "moderator": "Moderator",
+    "member": "Member"
+  },
+  "roleHints": {
+    "member": "Reads everything public and takes part in discussions.",
+    "editor": "Writes and publishes notes and articles.",
+    "moderator": "Keeps discussions healthy and lets new members in."
+  },
+  "statuses": {
+    "active": "Active",
+    "pending": "Waiting for approval",
+    "suspended": "Suspended",
+    "unverified": "Email not confirmed"
+  },
+  "auth": {
+    "github": "Continue with GitHub",
+    "passwordHint": "At least 10 characters. A few unrelated words make a strong one.",
+    "unavailable": "Sign-in is unavailable right now. Try again in a minute.",
+    "signIn": {
+      "spec": "sign in",
+      "title": "Sign in",
+      "passkey": "Sign in with a passkey",
+      "method": "Sign-in method",
+      "withPassword": "Password",
+      "withLink": "Email link",
+      "forgot": "Forgot your password?",
+      "submit": "Sign in",
+      "linkSubmit": "Email me a sign-in link",
+      "linkSentTitle": "Check your inbox",
+      "linkSentBody": "If {email} has an account here, a sign-in link is on its way. It works for 15 minutes.",
+      "noAccount": "New here?",
+      "join": "Create an account",
+      "inviteOnly": "Joining {site} takes an invitation from a member."
+    },
+    "signUp": {
+      "spec": "join",
+      "title": "Create your account",
+      "submit": "Create account",
+      "nameHint": "Shown next to what you write. You can change it later.",
+      "approvalNote": "New accounts are reviewed before they can take part. You can browse while you wait.",
+      "passkeyLater": "You can add a passkey from your account page once you’re in.",
+      "haveAccount": "Already have an account?",
+      "inviteOnlyTitle": "Invitation only",
+      "inviteOnlyBody": "Joining {site} takes an invitation. Ask a member to send you one."
+    },
+    "invite": {
+      "spec": "invitation",
+      "title": "Join {site}",
+      "from": "{inviter} invited you to join as {role}.",
+      "fromAnonymous": "You’re invited to join as {role}.",
+      "for": "For",
+      "role": "Role",
+      "expires": "Expires",
+      "useBoundEmail": "Sign up with the address this invitation was sent to.",
+      "accept": "Accept and create account",
+      "signedInAs": "You’re signed in as {email}. Sign out to accept this invitation with a new account.",
+      "invalidTitle": "This invitation can’t be used",
+      "invalidBody": "It has expired, was already used, or was withdrawn. Ask whoever invited you for a new one."
+    },
+    "verify": {
+      "spec": "confirm email",
+      "title": "Confirm your email",
+      "body": "We sent a link to {email}. Open it to finish setting up your account.",
+      "resend": "Send the link again",
+      "resent": "Link sent",
+      "failed": "That confirmation link has expired or was already used. Send a new one.",
+      "signedOut": "Sign in, then confirm your email from here.",
+      "doneTitle": "Email confirmed",
+      "doneBody": "Your address is confirmed and your account is ready."
+    },
+    "reset": {
+      "spec": "reset password",
+      "requestTitle": "Reset your password",
+      "requestBody": "Enter your email and we’ll send a link to choose a new password.",
+      "request": "Send reset link",
+      "sentTitle": "Check your inbox",
+      "sentBody": "If {email} has an account, a reset link is on its way. It works for one hour.",
+      "noMail": "This site can’t send email yet, so passwords can’t be reset here. Ask the site owner for a reset link.",
+      "back": "Back to sign in",
+      "title": "Choose a new password",
+      "newPassword": "New password",
+      "submit": "Set new password",
+      "done": "Password changed",
+      "doneBody": "Sign in with your new password. Your other devices were signed out.",
+      "invalid": "This reset link has expired or was already used. Request a new one."
+    }
+  },
+  "account": {
+    "spec": "account",
+    "title": "Your account",
+    "unverifiedTitle": "Confirm your email",
+    "unverifiedBody": "Until your address is confirmed, your account can only read.",
+    "unverifiedAction": "Send the confirmation link",
+    "pendingTitle": "Waiting for approval",
+    "pendingBody": "An owner or moderator will review your account. You can browse in the meantime.",
+    "profile": {
+      "title": "Profile",
+      "email": "Email",
+      "verified": "confirmed",
+      "unverified": "not confirmed",
+      "language": "Language for email",
+      "languageHint": "Emails from this site use this language.",
+      "siteLanguage": "Site default",
+      "save": "Save profile",
+      "saved": "Profile saved"
+    },
+    "password": {
+      "title": "Password",
+      "none": "You sign in without a password, with a passkey, GitHub or an email link.",
+      "current": "Current password",
+      "next": "New password",
+      "signOutOthers": "Sign out my other devices",
+      "change": "Change password",
+      "changed": "Password changed"
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "lead": "Sign in with your fingerprint, face or device PIN instead of a password.",
+      "empty": "No passkeys yet. Add one to sign in without typing a password.",
+      "unnamed": "Passkey",
+      "addedOn": "Added {date}",
+      "add": "Add a passkey",
+      "added": "Passkey added",
+      "remove": "Remove passkey",
+      "removed": "Passkey removed",
+      "removeTitle": "Remove this passkey?",
+      "removeBody": "You won’t be able to sign in with it any more. Other passkeys and sign-in methods keep working."
+    },
+    "connections": {
+      "title": "Connected accounts",
+      "connected": "connected",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "disconnected": "GitHub disconnected"
+    },
+    "sessions": {
+      "title": "Signed-in devices",
+      "current": "this device",
+      "signedIn": "Signed in {date}",
+      "unknownDevice": "Unknown device",
+      "revoke": "Sign out",
+      "revoked": "Device signed out",
+      "revokeOthers": "Sign out all other devices",
+      "revokedOthers": "Other devices signed out"
+    }
+  },
+  "studio": {
+    "settings": {
+      "site": "Site",
+      "siteTitle": "Site name",
+      "description": "Description",
+      "descriptionHint": "Shown on the home page and in search results.",
+      "language": "Default language",
+      "languageHint": "Used for email when a member hasn’t picked a language.",
+      "siteSaved": "Site settings saved",
+      "access": "Joining and signing in",
+      "accessLead": "Who can create an account, and how members sign in.",
+      "registration": "New accounts",
+      "modes": {
+        "invite": {
+          "label": "Invitation only",
+          "description": "People join through an invitation link."
+        },
+        "approval": {
+          "label": "Anyone can ask to join",
+          "description": "New accounts wait for an owner or moderator to approve them."
+        },
+        "open": {
+          "label": "Anyone can join",
+          "description": "New accounts can take part once their email is confirmed."
+        }
+      },
+      "password": "Password",
+      "passwordHint": "Sign in with email and password.",
+      "magicLink": "Email link",
+      "magicLinkHint": "Sign in with a one-time link sent by email.",
+      "magicLinkNoMail": "Needs email to be set up below.",
+      "passkeys": "Passkeys",
+      "alwaysOn": "always on",
+      "configured": "set up",
+      "notConfigured": "not set up",
+      "accessSaved": "Sign-in settings saved",
+      "staleTitle": "Sign in again to change this",
+      "staleBody": "Changes to who can join, sign-in and email need a sign-in from the last 10 minutes.",
+      "signInAgain": "Sign in again"
+    },
+    "mail": {
+      "title": "Email",
+      "lead": "How this site sends invitations, sign-in links and password resets.",
+      "sourceSettings": "saved here",
+      "sourceEnv": "from server environment",
+      "driver": "Send with",
+      "drivers": {
+        "none": {
+          "label": "Don’t send email",
+          "description": "Invitations are shared as links; email sign-in and password resets are off."
+        },
+        "log": {
+          "label": "Server log",
+          "description": "Writes each email to the server log instead of sending it. For development."
+        },
+        "smtp": {
+          "label": "SMTP",
+          "description": "Any mail provider that offers SMTP."
+        },
+        "aliyun-dm": {
+          "label": "Alibaba Cloud DirectMail",
+          "description": "Sends through the DirectMail API with an AccessKey."
+        }
+      },
+      "fields": {
+        "from": {
+          "label": "Sender address",
+          "hint": "Must be a sender your provider has verified."
+        },
+        "fromName": { "label": "Sender name", "hint": "Defaults to the site name." },
+        "replyTo": {
+          "label": "Reply-to address",
+          "hint": "Where replies go if not to the sender."
+        },
+        "host": { "label": "SMTP server", "hint": "For example smtp.example.com." },
+        "port": { "label": "Port", "hint": "Usually 465 with TLS, or 587 with STARTTLS." },
+        "secure": {
+          "label": "Connect with TLS",
+          "hint": "Turn off for port 587; the connection is upgraded with STARTTLS."
+        },
+        "username": { "label": "Username", "hint": "Leave empty if the server doesn’t need one." },
+        "password": { "label": "Password" },
+        "region": { "label": "Region", "hint": "For example cn-hangzhou or ap-southeast-1." },
+        "accessKeyId": {
+          "label": "AccessKey ID",
+          "hint": "Use a RAM user that can only send mail."
+        },
+        "accessKeySecret": { "label": "AccessKey secret" }
+      },
+      "secretKept": "Saved; leave empty to keep",
+      "secretHint": "Stored encrypted and never shown again.",
+      "secretKeptHint": "Stored encrypted. Leave empty to keep the saved one.",
+      "allowListTitle": "Mail goes to listed addresses only",
+      "allowListBody": "This server only delivers to: {list}. Other recipients are skipped.",
+      "save": "Save email settings",
+      "saved": "Email settings saved",
+      "test": "Send a test email",
+      "testSent": "Test email sent to {email}",
+      "reset": "Use server settings",
+      "resetTitle": "Use the server’s email settings?",
+      "resetBody": "The settings saved here are deleted, and email goes out the way the server environment is set up.",
+      "resetDone": "Using server email settings"
+    },
+    "invites": {
+      "title": "Invitations",
+      "create": "Invite someone",
+      "createLead": "Send an invitation to join {site}. It works once and expires in 7 days.",
+      "role": "Role",
+      "emailHint": "We’ll email the invitation, and only this address can use it.",
+      "emailHintNoMail": "Only this address can use the invitation. This site can’t send email, so share the link yourself.",
+      "send": "Create invitation",
+      "createdTitle": "Invitation created",
+      "mailed": "Sent to {email}.",
+      "shareLink": "Anyone with this link can join once. Share it privately.",
+      "empty": "No open invitations.",
+      "anyone": "Anyone with the link",
+      "expires": "expires {date}",
+      "revoke": "Withdraw",
+      "revoked": "Invitation withdrawn",
+      "revokeTitle": "Withdraw this invitation?",
+      "revokeBody": "The link stops working right away."
+    },
+    "members": {
+      "title": "Members",
+      "you": "you",
+      "joined": "joined {date}",
+      "waiting": "One person is waiting for approval. | {count} people are waiting for approval.",
+      "approve": "Approve",
+      "approved": "{name} approved",
+      "actions": "Actions for {name}",
+      "changeRole": "Change role",
+      "changeRoleTitle": "Change {name}’s role",
+      "roleChanged": "{name}’s role changed",
+      "suspend": "Suspend",
+      "suspendTitle": "Suspend {name}?",
+      "suspendBody": "They’re signed out everywhere and can’t sign in until restored. Nothing they wrote is deleted.",
+      "suspended": "{name} suspended",
+      "restore": "Restore",
+      "restored": "{name} restored"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again, and if it keeps happening, tell the site owner.",
+    "rate_limited": "Too many attempts. Wait a minute, then try again.",
+    "unauthorized": "Sign in to do this.",
+    "forbidden": "Your account isn’t allowed to do this.",
+    "not_found": "This no longer exists.",
+    "bad_origin": "This request didn’t come from this site. Reload the page and try again.",
+    "session_not_fresh": "For your security, sign in again to change this.",
+    "session_expired": "For your security, sign in again to change this.",
+    "invalid_email_or_password": "That email and password don’t match an account.",
+    "invalid_password": "That password isn’t right.",
+    "invalid_email": "Enter a valid email address.",
+    "password_too_short": "Use at least 10 characters.",
+    "password_too_long": "Use at most 128 characters.",
+    "user_already_exists": "An account with this email already exists. Sign in instead.",
+    "user_already_exists_use_another_email": "An account with this email already exists. Sign in instead.",
+    "email_taken": "Someone with this email already has an account.",
+    "email_not_verified": "Confirm your email first. Check your inbox for the link.",
+    "invitation_required": "Joining this site takes an invitation.",
+    "invitation_invalid": "This invitation has expired, was already used, or is for a different email address.",
+    "owner_exists": "This site already has an owner.",
+    "email_unverifiable": "This site can’t send email, so it can’t confirm your address. Sign up with GitHub or ask for an invitation sent to your email.",
+    "password_disabled": "Password sign-in is turned off on this site.",
+    "magic_link_disabled": "Email sign-in links aren’t available on this site.",
+    "account_suspended": "This account is suspended.",
+    "invalid_token": "This link has expired or was already used.",
+    "token_expired": "This link has expired. Request a new one.",
+    "expired_token": "This link has expired. Request a new one.",
+    "auth_cancelled": "Passkey sign-in was cancelled.",
+    "access_denied": "GitHub sign-in was cancelled.",
+    "unable_to_create_user": "Your account couldn’t be created. Joining this site may take an invitation.",
+    "account_already_linked_to_different_user": "That GitHub account is already connected to someone else here.",
+    "failed_to_unlink_last_account": "This is your only way to sign in, so it can’t be disconnected.",
+    "mail_not_configured": "Email isn’t set up yet.",
+    "recipient_not_allowed": "This server only delivers mail to the addresses in CAIRN_MAIL_ALLOWED_RECIPIENTS, and yours isn’t one of them.",
+    "mail_failed": "The email couldn’t be sent. Check the email settings and the server log."
   }
 }

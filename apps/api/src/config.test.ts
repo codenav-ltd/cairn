@@ -34,4 +34,13 @@ describe('loadConfig', () => {
   it('parses the auto-migrate flag', () => {
     expect(loadConfig({ ...base, CAIRN_AUTO_MIGRATE: 'false' }).autoMigrate).toBe(false)
   })
+
+  it('treats blank mail variables as unset', () => {
+    const blank = { CAIRN_MAIL_FROM: '', CAIRN_MAIL_FROM_NAME: ' ', CAIRN_MAIL_REPLY_TO: '' }
+    expect(loadConfig({ ...base, ...blank }).mail).toEqual({ driver: 'none' })
+    expect(loadConfig({ ...base, ...blank, CAIRN_MAIL_DRIVER: 'log' }).mail).toMatchObject({
+      driver: 'log',
+      from: 'cairn@localhost.invalid',
+    })
+  })
 })

@@ -1,2 +1,5 @@
 export * from './env'
 export * from './health'
+export * from './identity'
+export * from './locale'
+export * from './settings'

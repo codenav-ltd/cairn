@@ -1,0 +1,9 @@
+/*
+ * Self-hosted faces (all OFL). Each file declares unicode-range subsets, so a
+ * page only downloads the scripts it uses. Chinese falls through to the
+ * system CJK faces named in tokens.css.
+ */
+@import '@fontsource-variable/bricolage-grotesque/standard.css';
+@import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
+@import '@fontsource/commit-mono/400.css';
+@import '@fontsource/commit-mono/600.css';
