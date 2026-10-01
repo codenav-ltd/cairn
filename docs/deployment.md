@@ -17,7 +17,7 @@ therefore also a test of the self-hosting path.
 ```sh
 curl -O https://raw.githubusercontent.com/codenav-ltd/cairn/main/docker/compose.yml
 curl -O https://raw.githubusercontent.com/codenav-ltd/cairn/main/docker/.env.example
-cp .env.example .env    # set CAIRN_PUBLIC_URL and CAIRN_SECRET
+cp .env.example .env    # set CAIRN_PUBLIC_URL, CAIRN_SECRET and POSTGRES_PASSWORD
 docker compose --profile caddy up -d
 ```
 
@@ -63,6 +63,7 @@ be overridden through `NUXT_`-prefixed variables.
 | Published port     | `127.0.0.1:3890`                    | `127.0.0.1:3891`                    |
 | Database           | own `postgres` container and volume | own `postgres` container and volume |
 | `CAIRN_ENV`        | `production`                        | `staging`                           |
+| Postgres image tag | `18`                                | `18-dev`                            |
 
 Both run on the shared codenav server (Ubuntu 24.04, **arm64**) behind the
 existing nginx + certbot + Cloudflare setup. Host names have three labels on
@@ -106,11 +107,28 @@ never touches anything else in this directory.
 
 ```text
 ~/docker/cairn-staging/
-  compose.yml            copied from the repo on every deploy
-  compose.override.yml   by hand: port binding, resource limits, no caddy
-  .env                   by hand: secrets and CAIRN_ENV
-  .release               written by deploy: current and previous image tag
+  compose.yml   copied from the repo on every deploy
+  .env          by hand, except the CAIRN_TAG line, which deploy rewrites
+  .release      written by deploy: current and previous image tag
 ```
+
+Everything that differs between instances is in `.env`, so no override file is
+needed. Staging's, for example:
+
+```env
+COMPOSE_PROJECT_NAME=cairn-staging
+CAIRN_PUBLIC_URL=https://cairn-staging.codenav.dev
+CAIRN_ENV=staging
+CAIRN_SECRET=<openssl rand -hex 32>
+POSTGRES_PASSWORD=<openssl rand -hex 32>
+CAIRN_HTTP_BIND=127.0.0.1:3891
+CAIRN_POSTGRES_TAG=18-dev
+CAIRN_AUTO_MIGRATE=false
+CAIRN_TAG=sha-<managed by deploy>
+```
+
+`CAIRN_TAG` lives in `.env` so that a hand-run `docker compose up` during
+recovery keeps the deployed version instead of falling back to `latest`.
 
 ### 2.4 nginx vhost
 
@@ -147,7 +165,8 @@ server {
 | File                  | Trigger                                   | Runs on                       | Does                                           |
 | --------------------- | ----------------------------------------- | ----------------------------- | ---------------------------------------------- |
 | `ci.yml`              | pull requests, pushes                     | GitHub-hosted                 | Lint, typecheck, unit and integration tests    |
-| `images.yml`          | `workflow_call`, tags `v*`                | GitHub-hosted (amd64 + arm64) | Build and push images to GHCR                  |
+| `images.yml`          | `workflow_call`, tags `v*`                | GitHub-hosted (amd64 + arm64) | Build and push api and web images to GHCR      |
+| `postgres-image.yml`  | `docker/postgres/**` on `main`/`dev`      | GitHub-hosted (QEMU)          | Build and push `cairn-postgres`                |
 | `deploy.yml`          | push to `main`, dispatch, `workflow_call` | GitHub-hosted                 | Images → migrate → up → health check → notify  |
 | `deploy-staging.yml`  | push to `dev`, dispatch                   | —                             | Calls `deploy.yml` with `environment: staging` |
 | `notify-telegram.yml` | `workflow_call`                           | GitHub-hosted                 | Sends the deploy result to Telegram            |
@@ -181,6 +200,13 @@ are the tags self-hosters use.
 
 Images carry the commit in `CAIRN_VERSION`, and `/healthz` reports it.
 
+`cairn-postgres` is different: it holds the data, so it should only restart
+when it really changed. It is built only when `docker/postgres/` changes and is
+published under stable tags — `18` from `main`, `18-dev` from `dev`, plus an
+immutable `18-sha-<sha>` for each build. A deploy pulls it like any other
+image, but Postgres is only recreated when its tag has moved. Staging uses
+`18-dev`, so an image change reaches staging first.
+
 ### 3.4 Deploy steps
 
 ```mermaid
@@ -193,19 +219,22 @@ flowchart LR
   h --> n[notify]
 ```
 
-1. **images** — build and push `sha-<sha>`, or reuse it if it already exists.
+1. **images** — build and push `sha-<sha>`. Skipped when redeploying an
+   existing tag (§3.6).
 2. **upload** — copy `docker/compose.yml` into the instance directory.
 3. **pull** — `CAIRN_TAG=sha-<sha> docker compose pull`. Running containers are
    untouched.
-4. **migrate** — `docker compose run --rm api migrate` with the new image.
+4. **migrate** — `docker compose run --rm api node dist/main.mjs migrate` with
+   the new image.
    Production sets `CAIRN_AUTO_MIGRATE=false`, so this step is the only place
    migrations run. **If it fails, the deploy stops here and the old containers
    keep serving.**
-5. **up** — `docker compose up -d --wait` recreates the containers, then waits
-   for their health checks. Expect a few seconds of interruption; zero-downtime
+5. **up** — write the new `CAIRN_TAG` into `.env`, then
+   `docker compose up -d --wait` recreates the containers and waits for their
+   health checks. Expect a few seconds of interruption; zero-downtime
    switching is future work.
 6. **health check** — `GET https://<host>/healthz` from the runner, retried for
-   up to 60 seconds, must return `version == <sha>`. This proves the new code
+   up to 60 seconds, must report `<sha>` for both web and api. This proves the new code
    is serving through nginx and Cloudflare, not just that a container started.
 7. **record** — write the new tag to `.release`, keeping the previous one.
 8. **notify** — see §4.
@@ -241,8 +270,9 @@ add columns first, remove them in a later release.
   deploy red.
 - If `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHAT_ID` is missing, the job exits 0.
 
-Inputs: `ok` (boolean), `environment` (`staging` | `production`), `failed_step`
-(empty on success), `version`.
+Inputs: `ok` (boolean), `environment` (`staging` | `production`), `version`,
+`failed_step` (empty on success), `running` (the tag serving before the deploy)
+and `url`.
 
 Message:
 
@@ -257,12 +287,18 @@ https://github.com/codenav-ltd/cairn/actions/runs/123
 ```text
 ❌ Cairn production 部署失败：migrate
 codenav-ltd/cairn @ main · a1b2c3d by xiaodong
-线上仍在运行 sha-9f8e7d6
+线上仍在运行 9f8e7d6
 https://github.com/codenav-ltd/cairn/actions/runs/123
 ```
 
-The failure message names the step that failed and the version still serving,
-read from `.release`. That way the message alone answers "is the site down?".
+The failure message names the step that failed and says what is serving now,
+so the message alone answers "is the site down?":
+
+| Failed step                                                        | Second-to-last line                          |
+| ------------------------------------------------------------------ | -------------------------------------------- |
+| `images`, `resolve`, `ssh`, `running`, `upload`, `pull`, `migrate` | 线上仍在运行 `<previous>`                    |
+| `up`, `health`                                                     | 容器已开始切换，线上状态未确认，请检查服务器 |
+| `record`                                                           | 新版本已在线上服务，但 .release 未能更新     |
 
 ---
 
@@ -271,10 +307,16 @@ read from `.release`. That way the message alone answers "is the site down?".
 | Secret                                            | Scope                                |
 | ------------------------------------------------- | ------------------------------------ |
 | `SSH_HOST`, `SSH_USERNAME`, `SSH_KEY`, `SSH_PORT` | environments `production`, `staging` |
+| `SSH_KNOWN_HOSTS`                                 | environments `production`, `staging` |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`          | repository                           |
 
-Image pushes use the workflow's `GITHUB_TOKEN`. Images are public, so the
-server pulls without credentials.
+`SSH_KNOWN_HOSTS` pins the server's host key (`ssh-keyscan` output, verified
+once by hand). Runners are fresh machines, so trusting whatever key they see
+first would make every deploy open to interception.
+
+Image pushes use the workflow's `GITHUB_TOKEN`. The three GHCR packages are set
+to public once, after their first push, so the server and self-hosters pull
+without credentials.
 
 Application secrets (`CAIRN_SECRET`, database password, AI keys) live only in
 each instance's `.env` on the server.
@@ -300,8 +342,11 @@ approval, before the first deploy:
 
 1. Install the Docker Compose v2 plugin. The host has Docker 29 from Ubuntu's
    `docker.io` package, but no `docker compose`.
-2. Create `~/docker/cairn` and `~/docker/cairn-staging` with their `.env` and
-   `compose.override.yml`.
-3. Add the two nginx vhosts and run certbot for both host names.
-4. Add the DNS records in Cloudflare.
-5. Add the backup cron job for production.
+2. Create `~/docker/cairn` and `~/docker/cairn-staging` with their `.env`.
+3. Add the DNS records in Cloudflare.
+4. Add the two nginx vhosts and run certbot for both host names.
+5. Create the `production` and `staging` GitHub environments with the SSH
+   secrets, and add the Telegram secrets to the repository.
+6. Run `postgres-image.yml` once on `main` and once on `dev`, then make the
+   `cairn-api`, `cairn-web` and `cairn-postgres` packages public.
+7. Add the backup cron job for production.
