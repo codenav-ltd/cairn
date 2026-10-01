@@ -1,13 +1,18 @@
 import { PgBoss } from 'pg-boss'
 import type { Config } from './config'
+import { createMailQueue, startMailWorker } from './modules/mail/service'
+import type { Services } from './services'
 
-export async function startWorker(config: Config) {
+/** Every role needs a started pg-boss: the api enqueues, the worker consumes. */
+export async function startBoss(config: Config) {
   const boss = new PgBoss(config.databaseUrl)
-  boss.on('error', (error) => console.error('[worker]', error))
+  boss.on('error', (error) => console.error('[boss]', error))
   await boss.start()
-  console.log('[worker] started')
+  await createMailQueue(boss)
+  return boss
+}
 
-  return async () => {
-    await boss.stop({ graceful: true })
-  }
+export async function startWorker(boss: PgBoss, services: Services) {
+  await startMailWorker(boss, services.mail)
+  console.log('[worker] started')
 }

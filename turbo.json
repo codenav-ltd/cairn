@@ -8,7 +8,9 @@
       "outputs": ["dist/**", ".output/**"]
     },
     "typecheck": {},
-    "test": {},
+    "test": {
+      "env": ["CAIRN_TEST_DATABASE_URL"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

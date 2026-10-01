@@ -20,6 +20,22 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: ghcr.io/codenav-ltd/cairn-postgres:18
+        env:
+          POSTGRES_USER: cairn
+          POSTGRES_PASSWORD: cairn
+          POSTGRES_DB: cairn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cairn -d cairn"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      CAIRN_TEST_DATABASE_URL: postgres://cairn:cairn@localhost:5432/cairn
     steps:
       - uses: actions/checkout@v7
 

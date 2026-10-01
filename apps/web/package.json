@@ -10,9 +10,12 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@better-auth/passkey": "^1.7.7",
+    "@better-auth/utils": "0.4.2",
     "@cairnhq/contracts": "workspace:*",
     "@cairnhq/ui": "workspace:*",
     "@nuxtjs/i18n": "^10.6.0",
+    "better-auth": "^1.7.7",
     "nuxt": "^4.5.2",
     "vue": "^3.5.43",
     "vue-router": "^5.3.1",
