@@ -5,7 +5,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { magicLink } from 'better-auth/plugins/magic-link'
-import { sql } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import type { Config } from '../../config'
 import { recordAudit } from '../audit'
 import type { MailJob } from '../mail/service'
@@ -182,6 +182,19 @@ export function createAuth({
     },
 
     databaseHooks: {
+      session: {
+        create: {
+          async before(session) {
+            const [user] = await db
+              .select({ status: schema.users.status })
+              .from(schema.users)
+              .where(eq(schema.users.id, session.userId))
+            if (user?.status === 'suspended') {
+              throw reject('account_suspended', 'This account is suspended.')
+            }
+          },
+        },
+      },
       user: {
         create: {
           async before(user, ctx) {

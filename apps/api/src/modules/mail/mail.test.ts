@@ -29,8 +29,9 @@ describe('Aliyun RPC signature', () => {
 })
 
 describe('isRecipientAllowed', () => {
-  it('allows everything without rules', () => {
+  it('allows everyone without rules, and no one on staging', () => {
     expect(isRecipientAllowed('anyone@example.com', [])).toBe(true)
+    expect(isRecipientAllowed('anyone@example.com', [], { staging: true })).toBe(false)
   })
 
   it('matches exact addresses and domains, case-insensitively', () => {

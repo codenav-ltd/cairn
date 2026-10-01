@@ -27,6 +27,9 @@ export function createMailService({ boss, config, settings }: Deps) {
   }
 
   /** Queue a message for the worker. Returns false when no mail driver is configured. */
+  const allowed = (to: string) =>
+    isRecipientAllowed(to, config.mailAllowedRecipients, { staging: config.env === 'staging' })
+
   async function enqueue(job: MailJob): Promise<boolean> {
     if (!(await isConfigured())) {
       console.warn(`[mail] no mail driver configured; not sending "${job.template.kind}"`)
@@ -37,7 +40,7 @@ export function createMailService({ boss, config, settings }: Deps) {
   }
 
   async function deliver(job: MailJob) {
-    if (!isRecipientAllowed(job.to, config.mailAllowedRecipients)) {
+    if (!allowed(job.to)) {
       console.log(
         `[mail] "${job.template.kind}" suppressed: recipient not in CAIRN_MAIL_ALLOWED_RECIPIENTS`,
       )
@@ -57,7 +60,7 @@ export function createMailService({ boss, config, settings }: Deps) {
 
   /** Sent inline so the owner sees the provider's error straight away. */
   async function sendTest(to: string, locale: Locale) {
-    if (!isRecipientAllowed(to, config.mailAllowedRecipients)) {
+    if (!allowed(to)) {
       throw new ApiError(
         400,
         'recipient_not_allowed',

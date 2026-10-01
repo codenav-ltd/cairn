@@ -44,6 +44,8 @@ export async function createHarness(env: Record<string, string> = {}) {
     queued,
     client: () => new Client(app),
     async close() {
+      // Dropping with force terminates connections the pool is still closing.
+      pool.on('error', () => {})
       await pool.end()
       await admin.query(`drop database ${name} with (force)`)
       await admin.end()

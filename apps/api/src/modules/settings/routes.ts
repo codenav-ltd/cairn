@@ -53,6 +53,7 @@ export function settingsRoutes({ config, settings, mail, members }: Deps) {
               passkey: true,
               github: Boolean(config.github),
             },
+            mail: mailReady,
           },
           200,
         )

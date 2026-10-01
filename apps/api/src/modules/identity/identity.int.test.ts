@@ -217,6 +217,9 @@ describe.skipIf(!testDatabaseUrl)('identity', () => {
         (await moderator.patch(`/api/members/${plainId}`, { status: 'suspended' })).status,
       ).toBe(200)
       expect((await member.get('/api/me')).status).toBe(401)
+      const again = await h.client().signIn('plain@example.com')
+      expect(again.status).toBe(403)
+      expect(again.json.code).toBe('ACCOUNT_SUSPENDED')
 
       const audit = await h.db
         .select()

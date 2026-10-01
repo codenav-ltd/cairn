@@ -51,6 +51,8 @@ export const PublicSettings = z.object({
   locale: Locale,
   registration: RegistrationMode,
   methods: SignInMethods,
+  /** Whether the site can send email: confirmations, sign-in links and password resets. */
+  mail: z.boolean(),
 })
 export type PublicSettings = z.infer<typeof PublicSettings>
 
