@@ -24,7 +24,8 @@ const Config = z
       .pipe(z.array(Role).min(1)),
     CAIRN_AUTO_MIGRATE: flag.default(true),
     DATABASE_URL: z.url(),
-    PORT: z.coerce.number().int().positive().default(4000),
+    // Not PORT: web reads the same .env, and Nuxt listens on PORT.
+    CAIRN_API_PORT: z.coerce.number().int().positive().default(4000),
   })
   .superRefine((c, ctx) => {
     if (c.CAIRN_ENV !== 'development' && c.CAIRN_SECRET.length < 32) {
@@ -43,7 +44,7 @@ const Config = z
     roles: new Set(c.CAIRN_ROLES),
     autoMigrate: c.CAIRN_AUTO_MIGRATE,
     databaseUrl: c.DATABASE_URL,
-    port: c.PORT,
+    port: c.CAIRN_API_PORT,
   }))
 
 export type Config = z.infer<typeof Config>
