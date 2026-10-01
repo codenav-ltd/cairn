@@ -46,6 +46,10 @@ therefore needs exactly one upstream, whether that's Caddy, nginx or a tunnel.
 
 Media is stored in a named volume unless `STORAGE_DRIVER=s3`.
 
+`CAIRN_PUBLIC_URL` is the only URL an operator sets. `compose.yml` passes it to
+`web` as `NUXT_PUBLIC_I18N_BASE_URL` too, because Nuxt's runtime config can only
+be overridden through `NUXT_`-prefixed variables.
+
 ---
 
 ## 2. codenav environments
