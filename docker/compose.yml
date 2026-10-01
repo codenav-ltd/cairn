@@ -1,0 +1,93 @@
+# Cairn — self-hosting and codenav's own instances use this same file.
+# Configuration lives in .env next to it; see .env.example in this directory.
+
+name: ${COMPOSE_PROJECT_NAME:-cairn}
+
+x-healthcheck: &http-healthcheck
+  interval: 5s
+  timeout: 3s
+  retries: 12
+  start_period: 10s
+
+x-api: &api
+  image: ghcr.io/codenav-ltd/cairn-api:${CAIRN_TAG:-latest}
+  restart: unless-stopped
+  env_file: .env
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  web:
+    image: ghcr.io/codenav-ltd/cairn-web:${CAIRN_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      CAIRN_ENV: ${CAIRN_ENV:-production}
+      CAIRN_API_ORIGIN: http://api:4000
+      NUXT_PUBLIC_I18N_BASE_URL: ${CAIRN_PUBLIC_URL:?set CAIRN_PUBLIC_URL in .env}
+    ports:
+      - ${CAIRN_HTTP_BIND:-127.0.0.1:3000}:3000
+    depends_on:
+      - api
+    healthcheck:
+      <<: *http-healthcheck
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:3000/healthz').then((r) => process.exit(r.ok ? 0: 1), () => process.exit(1))
+
+  api:
+    <<: *api
+    environment:
+      DATABASE_URL: postgres://cairn:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/cairn
+      CAIRN_ROLES: api
+    healthcheck:
+      <<: *http-healthcheck
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:4000/healthz').then((r) => process.exit(r.ok ? 0: 1), () => process.exit(1))
+
+  worker:
+    <<: *api
+    environment:
+      DATABASE_URL: postgres://cairn:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/cairn
+      CAIRN_ROLES: worker
+
+  postgres:
+    image: ghcr.io/codenav-ltd/cairn-postgres:${CAIRN_POSTGRES_TAG:-18}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cairn
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: cairn
+    shm_size: 256mb
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U cairn -d cairn]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  caddy:
+    image: caddy:2
+    profiles: [caddy]
+    restart: unless-stopped
+    command: caddy reverse-proxy --from ${CAIRN_PUBLIC_URL} --to web:3000
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+
+volumes:
+  postgres:
+  caddy-data:
+  caddy-config:
