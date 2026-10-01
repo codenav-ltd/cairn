@@ -1,0 +1,24 @@
+# Local development services. The apps themselves run on the host with
+# `pnpm dev`.
+name: cairn-dev
+
+services:
+  postgres:
+    build: ./postgres
+    image: cairn-postgres:dev
+    environment:
+      POSTGRES_USER: cairn
+      POSTGRES_PASSWORD: cairn
+      POSTGRES_DB: cairn
+    ports:
+      - 127.0.0.1:54329:5432
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U cairn -d cairn]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  postgres:
