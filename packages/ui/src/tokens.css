@@ -1,0 +1,163 @@
+/*
+ * Cairn design tokens — the only place colours, type, durations, easings,
+ * radii and shadows are declared. See docs/design.md.
+ *
+ * Theme follows the system by default; `data-theme="light" | "dark"` on
+ * <html> overrides it. Every colour is a light-dark() pair, so both themes
+ * stay side by side and cannot drift apart.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Palette */
+  --bg: light-dark(#f7f8fa, #0d0f12);
+  --surface: light-dark(#ffffff, #15181d);
+  --surface-2: light-dark(#f0f2f5, #1c2027);
+  --line: light-dark(#e3e6eb, #222730);
+  --line-strong: light-dark(#cdd2da, #303744);
+  --ink: light-dark(#0e1116, #e6e9ee);
+  --muted: light-dark(#5b6472, #8a93a1);
+  --cobalt: light-dark(#2b4eff, #7d95ff);
+  --on-cobalt: light-dark(#ffffff, #0d0f12);
+  --amber: light-dark(#b87a00, #f0b43c);
+  --amber-ink: light-dark(#8a5a00, #f0b43c);
+  --danger: light-dark(#d23a3a, #ff6b6b);
+  --success: light-dark(#1f8a5b, #4cc38a);
+
+  /* Derived */
+  --cobalt-tint: color-mix(in oklch, var(--cobalt) 12%, transparent);
+  --cobalt-border: color-mix(in oklch, var(--cobalt) 30%, transparent);
+  --amber-tint: color-mix(in oklch, var(--amber) 14%, transparent);
+  --danger-tint: color-mix(in oklch, var(--danger) 12%, transparent);
+  --success-tint: color-mix(in oklch, var(--success) 12%, transparent);
+
+  /* Interaction overlays */
+  --hover: color-mix(in oklch, var(--ink) 5%, transparent);
+  --press: color-mix(in oklch, var(--ink) 9%, transparent);
+  --select: var(--cobalt-tint);
+
+  /* Type */
+  --face-display:
+    'Bricolage Grotesque', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --face-text:
+    'Atkinson Hyperlegible Next', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui,
+    sans-serif;
+  --face-mono: 'Commit Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --t-micro: 12px;
+  --t-micro-lh: 16px;
+  --t-meta: 13px;
+  --t-meta-lh: 20px;
+  --t-ui: 15px;
+  --t-ui-lh: 22px;
+  --t-body: 18px;
+  --t-body-lh: 29px;
+  --t-h4: 20px;
+  --t-h4-lh: 28px;
+  --t-h3: 23px;
+  --t-h3-lh: 30px;
+  --t-h2: 29px;
+  --t-h2-lh: 36px;
+  --t-h1: 40px;
+  --t-h1-lh: 46px;
+  --t-title: 56px;
+  --t-title-lh: 60px;
+
+  --measure: 68ch;
+  --measure-cjk: 38em;
+
+  /* Space */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+
+  /* Shape */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --r-full: 9999px;
+
+  /* Depth */
+  --shadow-near: light-dark(rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.4));
+  --shadow-far: light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.5));
+  --shadow-pop: 0 1px 2px var(--shadow-near), 0 8px 24px var(--shadow-far);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--cobalt);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 350ms;
+  --transition: var(--dur) var(--ease-out);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Tailwind utilities read the same tokens. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-cobalt: var(--cobalt);
+  --color-on-cobalt: var(--on-cobalt);
+  --color-amber: var(--amber);
+  --color-amber-ink: var(--amber-ink);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+
+  --font-display: var(--face-display);
+  --font-text: var(--face-text);
+  --font-mono: var(--face-mono);
+
+  --text-micro: var(--t-micro);
+  --text-micro--line-height: var(--t-micro-lh);
+  --text-meta: var(--t-meta);
+  --text-meta--line-height: var(--t-meta-lh);
+  --text-ui: var(--t-ui);
+  --text-ui--line-height: var(--t-ui-lh);
+  --text-body: var(--t-body);
+  --text-body--line-height: var(--t-body-lh);
+  --text-h4: var(--t-h4);
+  --text-h4--line-height: var(--t-h4-lh);
+  --text-h3: var(--t-h3);
+  --text-h3--line-height: var(--t-h3-lh);
+  --text-h2: var(--t-h2);
+  --text-h2--line-height: var(--t-h2-lh);
+  --text-h1: var(--t-h1);
+  --text-h1--line-height: var(--t-h1-lh);
+  --text-title: var(--t-title);
+  --text-title--line-height: var(--t-title-lh);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+}

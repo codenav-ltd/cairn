@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+@import '@cairnhq/ui/tokens.css';
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--face-text);
+  font-size: var(--t-ui);
+  line-height: var(--t-ui-lh);
+  -webkit-font-smoothing: antialiased;
+}
+
+:lang(zh) {
+  text-autospace: normal;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
