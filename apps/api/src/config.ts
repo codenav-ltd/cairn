@@ -119,7 +119,7 @@ function envMailConfig(c: {
       return MailConfig.safeParse({
         driver: 'log',
         ...sender,
-        from: sender.from ?? 'cairn@localhost',
+        from: sender.from ?? 'cairn@localhost.invalid',
       })
     case 'smtp':
       return MailConfig.safeParse({ driver: 'smtp', ...sender, ...parseSmtpUrl(c.CAIRN_SMTP_URL) })
