@@ -20,13 +20,13 @@ Every deployment is one **site** with one **owner**. The owner writes knowledge;
 visitors can register and take part in discussion. Federation between sites
 (ActivityPub) is a later phase and must not be blocked by v1 design choices.
 
-| Role        | Can                                                                 |
-|-------------|---------------------------------------------------------------------|
-| `owner`     | Everything, including site settings and AI providers               |
-| `editor`    | Write and publish articles and notes (optional co-authors)          |
-| `moderator` | Hide content, handle reports, manage members                        |
-| `member`    | Comment, start threads, react, bookmark                             |
-| `visitor`   | Read whatever is visible to the public (not a stored role)          |
+| Role        | Can                                                        |
+| ----------- | ---------------------------------------------------------- |
+| `owner`     | Everything, including site settings and AI providers       |
+| `editor`    | Write and publish articles and notes (optional co-authors) |
+| `moderator` | Hide content, handle reports, manage members               |
+| `member`    | Comment, start threads, react, bookmark                    |
+| `visitor`   | Read whatever is visible to the public (not a stored role) |
 
 ### 1.2 Content types
 
@@ -44,12 +44,12 @@ and knowledge base.
 
 Set per document:
 
-| Value      | Who can see it                                 | Listed / indexed / fed to AI surfaces |
-|------------|------------------------------------------------|---------------------------------------|
-| `private`  | Owner (and editors, if shared)                 | Never                                 |
-| `unlisted` | Anyone with the link                           | No                                    |
-| `members`  | Signed-in members                              | Only for signed-in members            |
-| `public`   | Everyone                                       | Yes                                   |
+| Value      | Who can see it                 | Listed / indexed / fed to AI surfaces |
+| ---------- | ------------------------------ | ------------------------------------- |
+| `private`  | Owner (and editors, if shared) | Never                                 |
+| `unlisted` | Anyone with the link           | No                                    |
+| `members`  | Signed-in members              | Only for signed-in members            |
+| `public`   | Everyone                       | Yes                                   |
 
 ### 1.4 Maturity
 
@@ -132,32 +132,32 @@ separation, and modules can be extracted later if ever needed.
 
 ## 3. Technology choices
 
-| Concern            | Choice                                   | Why                                                                                     |
-|--------------------|------------------------------------------|-----------------------------------------------------------------------------------------|
-| Language           | TypeScript everywhere                    | One type system from DB schema to UI                                                    |
-| Runtime            | Node ≥ 22 (24 LTS recommended)           | Owner's preference; mature ecosystem                                                    |
-| Monorepo           | pnpm workspaces + Turborepo              | Fast installs, cached builds                                                            |
-| Frontend           | Nuxt 4 (Vue 3)                           | Per-route hybrid rendering; owner knows Vue                                             |
-| UI primitives      | Reka UI + Tailwind CSS v4                | Headless, accessible; our own visual system on top                                      |
-| Client data        | Pinia Colada                             | Query cache with optimistic mutations                                                   |
-| Motion             | CSS transitions, View Transitions API, Motion for Vue | See `design.md`                                                             |
-| Editor             | Milkdown (ProseMirror)                   | Markdown-native                                                                         |
-| API framework      | Hono + `@hono/zod-openapi`               | Web-standard, fast, generates OpenAPI; typed RPC client for the frontend                |
-| Validation         | Zod                                      | Shared contracts between api and web                                                    |
-| ORM / migrations   | Drizzle                                  | Close to SQL, supports pgvector, lightweight                                            |
-| Database           | PostgreSQL 18                            | JSONB, RLS, native `uuidv7()`, and the extensions below                                 |
-| Vector search      | pgvector                                 | No extra service                                                                        |
-| Full-text search   | PGroonga                                 | Works for English and CJK without per-language tokenizer setup                          |
-| Job queue          | pg-boss                                  | Queue in Postgres; retries, schedules, no Redis required                                |
-| Auth               | Better Auth                              | Passkeys, OAuth, email; Drizzle adapter                                                 |
-| AI                 | Vercel AI SDK                            | One interface for chat, structured output, embeddings and transcription across providers |
-| MCP                | `@modelcontextprotocol/sdk`              | Streamable HTTP transport                                                               |
-| Markdown           | unified / remark / rehype + Shiki        | Extensible pipeline; same renderer on server for HTML and feeds                         |
-| i18n               | `@nuxtjs/i18n`                           | Routing, `hreflang`, lazy message loading                                               |
-| Fonts              | `@nuxt/fonts` + `cn-font-split` for CJK  | Self-hosted, metric-matched fallbacks, sliced CJK                                       |
-| Reverse proxy      | Caddy                                    | Automatic HTTPS                                                                         |
-| Testing            | Vitest, Playwright                       | Unit/integration and end-to-end                                                         |
-| Lint / format      | ESLint (flat config) + Prettier          |                                                                                         |
+| Concern          | Choice                                                | Why                                                                                      |
+| ---------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Language         | TypeScript everywhere                                 | One type system from DB schema to UI                                                     |
+| Runtime          | Node ≥ 22 (24 LTS recommended)                        | Owner's preference; mature ecosystem                                                     |
+| Monorepo         | pnpm workspaces + Turborepo                           | Fast installs, cached builds                                                             |
+| Frontend         | Nuxt 4 (Vue 3)                                        | Per-route hybrid rendering; owner knows Vue                                              |
+| UI primitives    | Reka UI + Tailwind CSS v4                             | Headless, accessible; our own visual system on top                                       |
+| Client data      | Pinia Colada                                          | Query cache with optimistic mutations                                                    |
+| Motion           | CSS transitions, View Transitions API, Motion for Vue | See `design.md`                                                                          |
+| Editor           | Milkdown (ProseMirror)                                | Markdown-native                                                                          |
+| API framework    | Hono + `@hono/zod-openapi`                            | Web-standard, fast, generates OpenAPI; typed RPC client for the frontend                 |
+| Validation       | Zod                                                   | Shared contracts between api and web                                                     |
+| ORM / migrations | Drizzle                                               | Close to SQL, supports pgvector, lightweight                                             |
+| Database         | PostgreSQL 18                                         | JSONB, RLS, native `uuidv7()`, and the extensions below                                  |
+| Vector search    | pgvector                                              | No extra service                                                                         |
+| Full-text search | PGroonga                                              | Works for English and CJK without per-language tokenizer setup                           |
+| Job queue        | pg-boss                                               | Queue in Postgres; retries, schedules, no Redis required                                 |
+| Auth             | Better Auth                                           | Passkeys, OAuth, email; Drizzle adapter                                                  |
+| AI               | Vercel AI SDK                                         | One interface for chat, structured output, embeddings and transcription across providers |
+| MCP              | `@modelcontextprotocol/sdk`                           | Streamable HTTP transport                                                                |
+| Markdown         | unified / remark / rehype + Shiki                     | Extensible pipeline; same renderer on server for HTML and feeds                          |
+| i18n             | `@nuxtjs/i18n`                                        | Routing, `hreflang`, lazy message loading                                                |
+| Fonts            | `@nuxt/fonts` + `cn-font-split` for CJK               | Self-hosted, metric-matched fallbacks, sliced CJK                                        |
+| Reverse proxy    | Caddy                                                 | Automatic HTTPS                                                                          |
+| Testing          | Vitest, Playwright                                    | Unit/integration and end-to-end                                                          |
+| Lint / format    | ESLint (flat config) + Prettier                       |                                                                                          |
 
 Optional components, off by default:
 
@@ -242,25 +242,25 @@ Timestamps are `timestamptz`.
 
 **documents**
 
-| Column                 | Notes                                                  |
-|------------------------|--------------------------------------------------------|
-| `id`                   |                                                        |
-| `type`                 | `article` · `note` · `thread`                          |
-| `slug`                 | unique per `locale`                                    |
-| `locale`               | `en`, `zh-CN`, …                                       |
-| `translation_group_id` | shared by all language versions of the same document   |
-| `title`, `summary`     |                                                        |
-| `body_md`              | canonical content                                      |
-| `body_html`            | rendered cache, regenerated on change                  |
-| `visibility`           | `private` · `unlisted` · `members` · `public`          |
-| `status`               | `draft` · `published` · `archived`                     |
-| `maturity`             | `seed` · `growing` · `evergreen` (null for threads)    |
-| `parent_id`            | thread attached to a document                          |
-| `promoted_from`        | comment or thread this was promoted from               |
-| `translation_policy`   | per-document override, null = site default             |
-| `author_id`            |                                                        |
-| `current_revision_id`  |                                                        |
-| `published_at`, `created_at`, `updated_at`, `deleted_at` |                      |
+| Column                                                   | Notes                                                |
+| -------------------------------------------------------- | ---------------------------------------------------- |
+| `id`                                                     |                                                      |
+| `type`                                                   | `article` · `note` · `thread`                        |
+| `slug`                                                   | unique per `locale`                                  |
+| `locale`                                                 | `en`, `zh-CN`, …                                     |
+| `translation_group_id`                                   | shared by all language versions of the same document |
+| `title`, `summary`                                       |                                                      |
+| `body_md`                                                | canonical content                                    |
+| `body_html`                                              | rendered cache, regenerated on change                |
+| `visibility`                                             | `private` · `unlisted` · `members` · `public`        |
+| `status`                                                 | `draft` · `published` · `archived`                   |
+| `maturity`                                               | `seed` · `growing` · `evergreen` (null for threads)  |
+| `parent_id`                                              | thread attached to a document                        |
+| `promoted_from`                                          | comment or thread this was promoted from             |
+| `translation_policy`                                     | per-document override, null = site default           |
+| `author_id`                                              |                                                      |
+| `current_revision_id`                                    |                                                      |
+| `published_at`, `created_at`, `updated_at`, `deleted_at` |                                                      |
 
 **revisions** — full snapshots, not diffs; diffs are computed on read.
 `id, document_id, number, title, body_md, source, author_id, job_id, reviewed_at, created_at`
@@ -375,6 +375,7 @@ flowchart LR
 
    It returns JSON validated by Zod:
    `{ intent: new_article | new_note | append, target_id?, locale, title, tags, body_md, suggested_links[] }`.
+
 4. **Draft** — a draft document (or an unreviewed revision of the target) is
    created with `source = capture`. The original audio and transcript stay
    attached as provenance.
@@ -425,11 +426,11 @@ routeRules: {
   otherwise it shows the original with a notice.
 - **Translation policy** is a site setting with a per-document override:
 
-  | Policy       | Behaviour                                                  |
-  |--------------|------------------------------------------------------------|
-  | `on_publish` | Publishing schedules a translation draft for each locale   |
-  | `manual`     | Translation runs only when the author clicks "Translate"   |
-  | `off`        | No translation                                             |
+  | Policy       | Behaviour                                                |
+  | ------------ | -------------------------------------------------------- |
+  | `on_publish` | Publishing schedules a translation draft for each locale |
+  | `manual`     | Translation runs only when the author clicks "Translate" |
+  | `off`        | No translation                                           |
 
 - **Reader machine translation** is a separate opt-in setting, off by default.
   When on, readers can request a translation of a document with no reviewed
@@ -442,19 +443,19 @@ routeRules: {
 
 ## 12. AI-facing surfaces
 
-| Surface             | Path                     | Notes                                                    |
-|---------------------|--------------------------|----------------------------------------------------------|
-| MCP server          | `/mcp`                   | Streamable HTTP; token auth                              |
-| `llms.txt`          | `/llms.txt`, `/zh/llms.txt` | Index of public content                              |
-| `llms-full.txt`     | `/llms-full.txt`         | Concatenated public Markdown                             |
-| Markdown view       | any page + `.md`         | Raw Markdown of a visible document                       |
-| Feeds               | `/feed.xml`, `/feed.json`| RSS/Atom and JSON Feed                                   |
-| OpenAPI             | `/api/openapi.json`      | Generated from routes                                    |
+| Surface         | Path                        | Notes                              |
+| --------------- | --------------------------- | ---------------------------------- |
+| MCP server      | `/mcp`                      | Streamable HTTP; token auth        |
+| `llms.txt`      | `/llms.txt`, `/zh/llms.txt` | Index of public content            |
+| `llms-full.txt` | `/llms-full.txt`            | Concatenated public Markdown       |
+| Markdown view   | any page + `.md`            | Raw Markdown of a visible document |
+| Feeds           | `/feed.xml`, `/feed.json`   | RSS/Atom and JSON Feed             |
+| OpenAPI         | `/api/openapi.json`         | Generated from routes              |
 
 **MCP tools (v1)**
 
 | Tool             | Scope          |
-|------------------|----------------|
+| ---------------- | -------------- |
 | `search`         | `read`         |
 | `get_document`   | `read`         |
 | `list_recent`    | `read`         |
@@ -540,14 +541,14 @@ between environments is keyed on `CAIRN_ENV`, never on host names.
 
 ## 17. Performance budgets
 
-| Metric                                | Budget        |
-|---------------------------------------|---------------|
-| LCP, article page, cached             | < 1.5 s on 4G |
-| INP                                   | < 100 ms      |
-| CLS                                   | < 0.05        |
-| JS shipped on an article page (gzip)  | < 90 KB       |
-| API p95, cached-path reads            | < 50 ms       |
-| Time to first visible feedback on any action | < 100 ms |
+| Metric                                       | Budget        |
+| -------------------------------------------- | ------------- |
+| LCP, article page, cached                    | < 1.5 s on 4G |
+| INP                                          | < 100 ms      |
+| CLS                                          | < 0.05        |
+| JS shipped on an article page (gzip)         | < 90 KB       |
+| API p95, cached-path reads                   | < 50 ms       |
+| Time to first visible feedback on any action | < 100 ms      |
 
 Budgets are checked in CI with Lighthouse on a seeded instance.
 
