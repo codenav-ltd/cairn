@@ -13,10 +13,13 @@
     "@better-auth/passkey": "^1.7.7",
     "@better-auth/utils": "0.4.2",
     "@cairnhq/contracts": "workspace:*",
+    "@cairnhq/policy": "workspace:*",
     "@cairnhq/ui": "workspace:*",
     "@nuxtjs/i18n": "^10.6.0",
     "better-auth": "^1.7.7",
+    "lucide-vue-next": "^1.0.0",
     "nuxt": "^4.5.2",
+    "reka-ui": "^2.10.5",
     "vue": "^3.5.43",
     "vue-router": "^5.3.1",
     "zod": "^4.6.5"

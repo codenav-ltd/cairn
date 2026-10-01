@@ -1,27 +1,17 @@
 <script setup lang="ts">
-const { t, locale, locales } = useI18n()
-const switchLocalePath = useSwitchLocalePath()
+const { t } = useI18n()
+const { site } = useSession()
 
-const otherLocales = computed(() => locales.value.filter((l) => l.code !== locale.value))
-
-useHead({ title: 'Cairn' })
+useHead({ title: () => site.value?.title ?? 'Cairn' })
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-dvh max-w-(--measure) flex-col justify-center gap-6 px-6">
+  <main
+    class="mx-auto flex w-full max-w-(--measure) flex-1 flex-col justify-center gap-6 px-6 pb-24"
+  >
     <p class="font-mono text-meta text-muted">site · ○ seed · rev 1</p>
-    <h1 class="title font-display text-h1 md:text-title">Cairn</h1>
-    <p class="text-body text-muted">{{ t('site.tagline') }}</p>
-    <nav :aria-label="t('locale.switch')" class="font-mono text-meta">
-      <NuxtLink
-        v-for="l in otherLocales"
-        :key="l.code"
-        :to="switchLocalePath(l.code)"
-        class="rounded-sm text-cobalt underline-offset-4 hover:underline"
-      >
-        {{ l.name }}
-      </NuxtLink>
-    </nav>
+    <h1 class="title font-display text-h1 md:text-title">{{ site?.title ?? 'Cairn' }}</h1>
+    <p class="text-body text-muted">{{ site?.description || t('site.tagline') }}</p>
   </main>
 </template>
 

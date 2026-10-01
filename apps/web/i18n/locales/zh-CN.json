@@ -1,8 +1,355 @@
 {
   "site": {
-    "tagline": "一座附带社区的知识花园。想法从一句随口说出的话开始，经过一次次修订，长成值得分享的内容。"
+    "tagline": "一座带社区的知识花园。想法从一句口述开始，一版一版生长，直到值得分享。"
   },
   "locale": {
     "switch": "语言"
+  },
+  "common": {
+    "cancel": "取消",
+    "close": "关闭",
+    "continue": "继续",
+    "copied": "链接已复制",
+    "copy": "复制链接",
+    "done": "完成",
+    "email": "邮箱",
+    "goHome": "回到首页",
+    "hidePassword": "隐藏密码",
+    "name": "名字",
+    "notifications": "通知",
+    "optional": "可选",
+    "or": "或",
+    "password": "密码",
+    "save": "保存更改",
+    "showPassword": "显示密码"
+  },
+  "nav": {
+    "label": "站点",
+    "menu": "账号菜单",
+    "account": "账号",
+    "studio": "工作台",
+    "settings": "设置",
+    "members": "成员",
+    "signIn": "登录",
+    "signOut": "退出登录",
+    "signOutFailed": "未能退出登录"
+  },
+  "roles": {
+    "owner": "站长",
+    "editor": "编辑",
+    "moderator": "版主",
+    "member": "成员"
+  },
+  "roleHints": {
+    "member": "阅读所有公开内容并参与讨论。",
+    "editor": "撰写并发布笔记和文章。",
+    "moderator": "维护讨论秩序，审核新成员。"
+  },
+  "statuses": {
+    "active": "正常",
+    "pending": "等待审核",
+    "suspended": "已停用",
+    "unverified": "邮箱未验证"
+  },
+  "auth": {
+    "github": "使用 GitHub 继续",
+    "passwordHint": "至少 10 个字符。几个互不相关的词组合起来就很安全。",
+    "unavailable": "暂时无法登录，请稍后再试。",
+    "signIn": {
+      "spec": "登录",
+      "title": "登录",
+      "passkey": "使用通行密钥登录",
+      "method": "登录方式",
+      "withPassword": "密码",
+      "withLink": "邮件链接",
+      "forgot": "忘记密码？",
+      "submit": "登录",
+      "linkSubmit": "把登录链接发到我的邮箱",
+      "linkSentTitle": "请查收邮件",
+      "linkSentBody": "如果 {email} 在这里有账号，登录链接已经发出，15 分钟内有效。",
+      "noAccount": "第一次来？",
+      "join": "创建账号",
+      "inviteOnly": "加入「{site}」需要成员的邀请。"
+    },
+    "signUp": {
+      "spec": "加入",
+      "title": "创建账号",
+      "submit": "创建账号",
+      "nameHint": "显示在你写的内容旁边，之后可以修改。",
+      "approvalNote": "新账号需要审核通过后才能参与。等待期间可以随意浏览。",
+      "passkeyLater": "进入之后，可以在账号页添加通行密钥。",
+      "haveAccount": "已经有账号了？",
+      "inviteOnlyTitle": "仅限邀请",
+      "inviteOnlyBody": "加入「{site}」需要邀请。请向成员索取一份邀请。"
+    },
+    "invite": {
+      "spec": "邀请",
+      "title": "加入「{site}」",
+      "from": "{inviter} 邀请你以{role}身份加入。",
+      "fromAnonymous": "你受邀以{role}身份加入。",
+      "for": "受邀邮箱",
+      "role": "角色",
+      "expires": "有效期至",
+      "useBoundEmail": "请用接收这份邀请的邮箱注册。",
+      "accept": "接受邀请并创建账号",
+      "signedInAs": "你当前以 {email} 登录。要用新账号接受这份邀请，请先退出登录。",
+      "invalidTitle": "这份邀请无法使用",
+      "invalidBody": "它可能已过期、已被使用或已被撤回。请联系邀请你的人重新发送。"
+    },
+    "verify": {
+      "spec": "验证邮箱",
+      "title": "验证你的邮箱",
+      "body": "我们已向 {email} 发送了一个链接，打开它即可完成账号设置。",
+      "resend": "重新发送链接",
+      "resent": "链接已发送",
+      "failed": "这个验证链接已过期或已被使用，请重新发送。",
+      "signedOut": "请先登录，然后在这里验证邮箱。",
+      "doneTitle": "邮箱已验证",
+      "doneBody": "你的邮箱已验证，账号已经可以使用。"
+    },
+    "reset": {
+      "spec": "重置密码",
+      "requestTitle": "重置密码",
+      "requestBody": "输入你的邮箱，我们会发送一个设置新密码的链接。",
+      "request": "发送重置链接",
+      "sentTitle": "请查收邮件",
+      "sentBody": "如果 {email} 有账号，重置链接已经发出，一小时内有效。",
+      "noMail": "本站尚未配置邮件，无法在这里重置密码。请联系站长获取重置链接。",
+      "back": "返回登录",
+      "title": "设置新密码",
+      "newPassword": "新密码",
+      "submit": "设置新密码",
+      "done": "密码已修改",
+      "doneBody": "请用新密码登录。你的其他设备已退出登录。",
+      "invalid": "这个重置链接已过期或已被使用，请重新申请。"
+    }
+  },
+  "account": {
+    "spec": "账号",
+    "title": "你的账号",
+    "unverifiedTitle": "请验证邮箱",
+    "unverifiedBody": "邮箱验证之前，你的账号只能浏览。",
+    "unverifiedAction": "发送验证链接",
+    "pendingTitle": "等待审核",
+    "pendingBody": "站长或版主会审核你的账号，在此期间可以随意浏览。",
+    "profile": {
+      "title": "个人资料",
+      "email": "邮箱",
+      "verified": "已验证",
+      "unverified": "未验证",
+      "language": "邮件语言",
+      "languageHint": "本站发给你的邮件使用这种语言。",
+      "siteLanguage": "跟随站点默认",
+      "save": "保存资料",
+      "saved": "资料已保存"
+    },
+    "password": {
+      "title": "密码",
+      "none": "你不使用密码登录，而是通过通行密钥、GitHub 或邮件链接。",
+      "current": "当前密码",
+      "next": "新密码",
+      "signOutOthers": "让我的其他设备退出登录",
+      "change": "修改密码",
+      "changed": "密码已修改"
+    },
+    "passkeys": {
+      "title": "通行密钥",
+      "lead": "用指纹、面容或设备 PIN 登录，无需输入密码。",
+      "empty": "还没有通行密钥。添加一个，就能免密码登录。",
+      "unnamed": "通行密钥",
+      "addedOn": "添加于 {date}",
+      "add": "添加通行密钥",
+      "added": "通行密钥已添加",
+      "remove": "移除通行密钥",
+      "removed": "通行密钥已移除",
+      "removeTitle": "移除这个通行密钥？",
+      "removeBody": "之后将无法用它登录。其他通行密钥和登录方式不受影响。"
+    },
+    "connections": {
+      "title": "关联账号",
+      "connected": "已关联",
+      "connect": "关联",
+      "disconnect": "解除关联",
+      "disconnected": "已解除 GitHub 关联"
+    },
+    "sessions": {
+      "title": "已登录的设备",
+      "current": "当前设备",
+      "signedIn": "登录于 {date}",
+      "unknownDevice": "未知设备",
+      "revoke": "退出登录",
+      "revoked": "该设备已退出登录",
+      "revokeOthers": "让其他所有设备退出登录",
+      "revokedOthers": "其他设备已退出登录"
+    }
+  },
+  "studio": {
+    "settings": {
+      "site": "站点",
+      "siteTitle": "站点名称",
+      "description": "简介",
+      "descriptionHint": "显示在首页和搜索结果中。",
+      "language": "默认语言",
+      "languageHint": "成员未选择语言时，邮件使用这种语言。",
+      "siteSaved": "站点设置已保存",
+      "access": "加入与登录",
+      "accessLead": "谁可以创建账号，以及成员如何登录。",
+      "registration": "新账号",
+      "modes": {
+        "invite": {
+          "label": "仅限邀请",
+          "description": "通过邀请链接加入。"
+        },
+        "approval": {
+          "label": "任何人都可以申请",
+          "description": "新账号需要站长或版主审核通过。"
+        },
+        "open": {
+          "label": "任何人都可以加入",
+          "description": "新账号验证邮箱后即可参与。"
+        }
+      },
+      "password": "密码",
+      "passwordHint": "使用邮箱和密码登录。",
+      "magicLink": "邮件链接",
+      "magicLinkHint": "通过邮件中的一次性链接登录。",
+      "magicLinkNoMail": "需要先在下方配置邮件。",
+      "passkeys": "通行密钥",
+      "alwaysOn": "始终开启",
+      "configured": "已配置",
+      "notConfigured": "未配置",
+      "accessSaved": "登录设置已保存",
+      "staleTitle": "请重新登录后再修改",
+      "staleBody": "修改加入方式、登录方式和邮件设置，需要在最近 10 分钟内登录过。",
+      "signInAgain": "重新登录"
+    },
+    "mail": {
+      "title": "邮件",
+      "lead": "本站如何发送邀请、登录链接和密码重置邮件。",
+      "sourceSettings": "在此保存",
+      "sourceEnv": "来自服务器环境变量",
+      "driver": "发送方式",
+      "drivers": {
+        "none": {
+          "label": "不发送邮件",
+          "description": "邀请以链接形式分享；邮件登录和密码重置不可用。"
+        },
+        "log": {
+          "label": "写入服务器日志",
+          "description": "把每封邮件写进服务器日志而不真正发送，用于开发。"
+        },
+        "smtp": {
+          "label": "SMTP",
+          "description": "任何提供 SMTP 的邮件服务。"
+        },
+        "aliyun-dm": {
+          "label": "阿里云邮件推送",
+          "description": "使用 AccessKey 通过 DirectMail API 发送。"
+        }
+      },
+      "fields": {
+        "from": { "label": "发信地址", "hint": "必须是邮件服务商已验证的发信地址。" },
+        "fromName": { "label": "发信人名称", "hint": "默认使用站点名称。" },
+        "replyTo": { "label": "回信地址", "hint": "回复不发往发信地址时填写。" },
+        "host": { "label": "SMTP 服务器", "hint": "例如 smtp.example.com。" },
+        "port": { "label": "端口", "hint": "TLS 通常为 465，STARTTLS 通常为 587。" },
+        "secure": {
+          "label": "使用 TLS 连接",
+          "hint": "端口 587 请关闭，连接会通过 STARTTLS 升级加密。"
+        },
+        "username": { "label": "用户名", "hint": "服务器不需要时留空。" },
+        "password": { "label": "密码" },
+        "region": { "label": "地域", "hint": "例如 cn-hangzhou 或 ap-southeast-1。" },
+        "accessKeyId": { "label": "AccessKey ID", "hint": "建议使用只有发信权限的 RAM 用户。" },
+        "accessKeySecret": { "label": "AccessKey Secret" }
+      },
+      "secretKept": "已保存；留空即保留",
+      "secretHint": "加密保存，之后不会再显示。",
+      "secretKeptHint": "加密保存。留空则保留已保存的值。",
+      "allowListTitle": "邮件只发往名单中的地址",
+      "allowListBody": "本服务器只向这些地址投递：{list}。其他收件人会被跳过。",
+      "save": "保存邮件设置",
+      "saved": "邮件设置已保存",
+      "test": "发送测试邮件",
+      "testSent": "测试邮件已发送至 {email}",
+      "reset": "改用服务器设置",
+      "resetTitle": "改用服务器的邮件设置？",
+      "resetBody": "这里保存的设置会被删除，邮件将按服务器环境变量的配置发送。",
+      "resetDone": "已改用服务器邮件设置"
+    },
+    "invites": {
+      "title": "邀请",
+      "create": "邀请成员",
+      "createLead": "发送一份加入「{site}」的邀请。邀请只能使用一次，7 天后失效。",
+      "role": "角色",
+      "emailHint": "我们会把邀请发到这个邮箱，并且只有这个地址可以使用。",
+      "emailHintNoMail": "只有这个地址可以使用这份邀请。本站无法发送邮件，请自行分享链接。",
+      "send": "创建邀请",
+      "createdTitle": "邀请已创建",
+      "mailed": "已发送至 {email}。",
+      "shareLink": "持有此链接的人可以加入一次，请私下分享。",
+      "empty": "没有待接受的邀请。",
+      "anyone": "持有链接的任何人",
+      "expires": "{date} 失效",
+      "revoke": "撤回",
+      "revoked": "邀请已撤回",
+      "revokeTitle": "撤回这份邀请？",
+      "revokeBody": "链接会立即失效。"
+    },
+    "members": {
+      "title": "成员",
+      "you": "你",
+      "joined": "{date} 加入",
+      "waiting": "有 {count} 人等待审核。",
+      "approve": "通过",
+      "approved": "已通过 {name}",
+      "actions": "{name} 的操作",
+      "changeRole": "修改角色",
+      "changeRoleTitle": "修改 {name} 的角色",
+      "roleChanged": "已修改 {name} 的角色",
+      "suspend": "停用",
+      "suspendTitle": "停用 {name}？",
+      "suspendBody": "对方会在所有设备上退出登录，恢复之前无法再登录。对方写过的内容不会被删除。",
+      "suspended": "已停用 {name}",
+      "restore": "恢复",
+      "restored": "已恢复 {name}"
+    }
+  },
+  "errors": {
+    "generic": "出了点问题。请重试；如果一直出现，请告诉站长。",
+    "rate_limited": "尝试次数太多，请等一分钟再试。",
+    "unauthorized": "请先登录。",
+    "forbidden": "你的账号没有执行此操作的权限。",
+    "not_found": "它已经不存在了。",
+    "bad_origin": "这个请求并非来自本站。请刷新页面后重试。",
+    "session_not_fresh": "为了安全，请重新登录后再修改。",
+    "session_expired": "为了安全，请重新登录后再修改。",
+    "invalid_email_or_password": "邮箱和密码不匹配任何账号。",
+    "invalid_password": "密码不正确。",
+    "invalid_email": "请输入有效的邮箱地址。",
+    "password_too_short": "密码至少 10 个字符。",
+    "password_too_long": "密码最多 128 个字符。",
+    "user_already_exists": "这个邮箱已经有账号了，请直接登录。",
+    "user_already_exists_use_another_email": "这个邮箱已经有账号了，请直接登录。",
+    "email_taken": "这个邮箱已经有账号了。",
+    "email_not_verified": "请先验证邮箱，验证链接在你的收件箱里。",
+    "invitation_required": "加入本站需要邀请。",
+    "invitation_invalid": "这份邀请已过期、已被使用，或属于其他邮箱。",
+    "owner_exists": "本站已经有站长了。",
+    "email_unverifiable": "本站无法发送邮件，因此无法验证你的邮箱。请使用 GitHub 注册，或索取一份发到你邮箱的邀请。",
+    "password_disabled": "本站已关闭密码登录。",
+    "magic_link_disabled": "本站不提供邮件登录链接。",
+    "account_suspended": "这个账号已被停用。",
+    "invalid_token": "这个链接已过期或已被使用。",
+    "token_expired": "这个链接已过期，请重新申请。",
+    "expired_token": "这个链接已过期，请重新申请。",
+    "auth_cancelled": "通行密钥登录已取消。",
+    "access_denied": "GitHub 登录已取消。",
+    "unable_to_create_user": "未能创建账号。加入本站可能需要邀请。",
+    "account_already_linked_to_different_user": "这个 GitHub 账号已经关联到本站的其他成员。",
+    "failed_to_unlink_last_account": "这是你唯一的登录方式，无法解除关联。",
+    "mail_not_configured": "尚未配置邮件。",
+    "recipient_not_allowed": "本服务器只向 CAIRN_MAIL_ALLOWED_RECIPIENTS 中的地址投递邮件，你的地址不在其中。",
+    "mail_failed": "邮件未能发出。请检查邮件设置和服务器日志。"
   }
 }

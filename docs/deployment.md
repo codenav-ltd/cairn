@@ -50,6 +50,39 @@ Media is stored in a named volume unless `STORAGE_DRIVER=s3`.
 `web` as `NUXT_PUBLIC_I18N_BASE_URL` too, because Nuxt's runtime config can only
 be overridden through `NUXT_`-prefixed variables.
 
+### 1.3 Configuration
+
+Every variable is listed, with its default, in
+[`docker/.env.example`](../docker/.env.example). Beyond the three required ones:
+
+| Variable                            | Purpose                                                                |
+| ----------------------------------- | ---------------------------------------------------------------------- |
+| `CAIRN_CLIENT_IP_HEADER`            | Header the reverse proxy puts the visitor's address in (see below)     |
+| `CAIRN_MAIL_DRIVER`                 | `none`, `log`, `smtp` or `aliyun-dm`; owners can override it in Studio |
+| `CAIRN_MAIL_FROM`, `_FROM_NAME`     | Sender; `_REPLY_TO` is optional                                        |
+| `CAIRN_SMTP_URL`                    | `smtps://user:password@host:465`, or `smtp://` for STARTTLS on 587     |
+| `CAIRN_ALIYUN_DM_*`                 | `REGION`, `ACCESS_KEY_ID`, `ACCESS_KEY_SECRET` for DirectMail          |
+| `CAIRN_MAIL_ALLOWED_RECIPIENTS`     | Comma-separated addresses or `@domains`; everyone else is skipped      |
+| `CAIRN_GITHUB_CLIENT_ID`, `_SECRET` | GitHub sign-in; callback `<CAIRN_PUBLIC_URL>/api/auth/callback/github` |
+
+Rate limits and the audit log key on the visitor's address, which only the
+reverse proxy knows. `web` reads it from `CAIRN_CLIENT_IP_HEADER` and passes it
+to `api`, replacing anything the client sent. Name a header the proxy
+**overwrites**: `x-forwarded-for` with the Caddy profile, `x-real-ip` behind
+nginx with `proxy_set_header X-Real-IP $remote_addr`, `cf-connecting-ip` behind
+Cloudflare. A header the proxy appends to can be forged. Left empty, every
+visitor appears as the proxy's own address and shares one rate limit.
+
+The first account is the owner, created from an invitation that only the CLI
+can issue:
+
+```sh
+docker compose exec api node dist/main.mjs invite --role owner --email you@example.com
+```
+
+It prints a link that works once, for 24 hours. `reset-password --email …`
+prints a password reset link the same way, for when mail isn't set up.
+
 ---
 
 ## 2. codenav environments
@@ -86,14 +119,14 @@ Staging shares the machine with production and nothing else:
 
 Behaviour that differs is keyed on one variable, never on host names:
 
-| Concern       | Staging behaviour                                                                    |
-| ------------- | ------------------------------------------------------------------------------------ |
-| Indexing      | `X-Robots-Tag: noindex, nofollow` on every response; `robots.txt` disallows all      |
-| AI surfaces   | `llms.txt` and `llms-full.txt` return 404                                            |
-| Outbound mail | Delivered only to addresses in `CAIRN_MAIL_ALLOWLIST`; others are logged and dropped |
-| AI spend      | Hard monthly cap from `CAIRN_AI_BUDGET_USD`                                          |
-| Federation    | Disabled (when it exists)                                                            |
-| UI            | A persistent "Staging" marker in the header                                          |
+| Concern       | Staging behaviour                                                                  |
+| ------------- | ---------------------------------------------------------------------------------- |
+| Indexing      | `X-Robots-Tag: noindex, nofollow` on every response; `robots.txt` disallows all    |
+| AI surfaces   | `llms.txt` and `llms-full.txt` return 404                                          |
+| Outbound mail | Delivered only to `CAIRN_MAIL_ALLOWED_RECIPIENTS`, and to no one while it is empty |
+| AI spend      | Hard monthly cap from `CAIRN_AI_BUDGET_USD`                                        |
+| Federation    | Disabled (when it exists)                                                          |
+| UI            | A persistent "Staging" marker in the header                                        |
 
 All absolute URLs (auth callbacks, email links, feeds, OG tags) are built from
 `CAIRN_PUBLIC_URL`. The frontend calls the api same-origin. No host name is
@@ -124,8 +157,19 @@ POSTGRES_PASSWORD=<openssl rand -hex 32>
 CAIRN_HTTP_BIND=127.0.0.1:3891
 CAIRN_POSTGRES_TAG=18-dev
 CAIRN_AUTO_MIGRATE=false
+CAIRN_CLIENT_IP_HEADER=cf-connecting-ip
+CAIRN_MAIL_DRIVER=aliyun-dm
+CAIRN_MAIL_FROM=sso@codenav.dev
+CAIRN_ALIYUN_DM_ACCESS_KEY_ID=<shared with boxly>
+CAIRN_ALIYUN_DM_ACCESS_KEY_SECRET=<shared with boxly>
+CAIRN_MAIL_ALLOWED_RECIPIENTS=<the team's own addresses>
+CAIRN_GITHUB_CLIENT_ID=<the staging OAuth app>
+CAIRN_GITHUB_CLIENT_SECRET=<the staging OAuth app>
 CAIRN_TAG=sha-<managed by deploy>
 ```
+
+Production has no `CAIRN_MAIL_ALLOWED_RECIPIENTS` and its own GitHub OAuth app;
+an OAuth app has exactly one callback URL.
 
 `CAIRN_TAG` lives in `.env` so that a hand-run `docker compose up` during
 recovery keeps the deployed version instead of falling back to `latest`.

@@ -24,6 +24,7 @@ services:
     environment:
       CAIRN_ENV: ${CAIRN_ENV:-production}
       CAIRN_API_ORIGIN: http://api:4000
+      CAIRN_CLIENT_IP_HEADER: ${CAIRN_CLIENT_IP_HEADER:-}
       NUXT_PUBLIC_I18N_BASE_URL: ${CAIRN_PUBLIC_URL:?set CAIRN_PUBLIC_URL in .env}
     ports:
       - ${CAIRN_HTTP_BIND:-127.0.0.1:3000}:3000

@@ -32,10 +32,11 @@ One role per user, stored on `user.role`. `visitor` is the absence of a session.
 
 ### 1.1 Account status
 
-`user.status` is `active`, `pending` or `suspended`. A pending or suspended user
-can sign in, sees why they cannot do more, and is treated as a visitor by
-`can` and `visibleTo`. Suspending revokes all of the user's sessions and access
-tokens.
+`user.status` is `active`, `pending` or `suspended`. A pending user can sign in,
+sees why they cannot do more, and is treated as a visitor by `can` and
+`visibleTo`. So is an active user whose email address is not yet confirmed.
+Suspending revokes all of the user's sessions, and a suspended user cannot sign
+in again until restored.
 
 ---
 
@@ -80,12 +81,14 @@ Site setting `registration.mode`:
 Every sign-in method creates users through one Better Auth
 `databaseHooks.user.create.before` hook, and that hook is the only place the
 policy is enforced. Under `invite`, it requires the invitation carried in the
-signed `cairn_invite` cookie (set when the invite page is opened), checks that
+`HttpOnly` `cairn_invite` cookie (set for an hour when the invite page is
+opened; the token is its own secret, so the cookie is not signed), checks that
 the email matches if the invitation is bound to one, and claims it with
 `update … where accepted_at is null returning`, so a token cannot be used twice
 even under concurrent requests. The invitation's role is applied to the new
 user. An invitation always works regardless of mode, which is how staff are
-added to an `open` site.
+added to an `open` site. Whatever the mode, an account whose address could only
+be confirmed by mail is refused with `email_unverifiable` while mail is off.
 
 ---
 
@@ -111,7 +114,8 @@ docker compose exec api node dist/main.mjs invite --role owner --email you@examp
 ```
 
 prints the link, and mails it if mail is configured. Owner invitations can be
-created only while the site has no owner, and only from the CLI.
+created only while the site has no owner, only from the CLI, and only bound to
+an email address.
 
 ### 4.2 Other CLI commands
 
@@ -129,21 +133,24 @@ Both write to `audit_log` with `actor = cli`.
 - Better Auth cookie sessions, `__Secure-` prefixed outside development,
   `HttpOnly`, `SameSite=Lax`. 30-day lifetime, refreshed daily.
 - **Fresh session** — signed in within the last 10 minutes — is required to
-  change roles, mail settings, the registration mode, or to remove a passkey.
-  Otherwise the UI asks the user to confirm with a passkey or password.
+  change the registration mode, sign-in methods or mail settings, and by Better
+  Auth itself to unlink an account. Otherwise the UI asks the user to sign in
+  again.
 - **Origin check:** Better Auth's `trustedOrigins` is `CAIRN_PUBLIC_URL`; Cairn's
-  own state-changing routes apply the same check.
+  own state-changing routes refuse any other `Origin` with `bad_origin`.
 - **Rate limits** use Better Auth's limiter with database storage, so they hold
-  across processes: sign-in and magic-link requests per IP and per email,
-  invite acceptance per IP.
-- **Client IP** comes from the socket unless `CAIRN_CLIENT_IP_HEADER` names a
-  header set by a trusted proxy. The codenav instances use `cf-connecting-ip`.
+  across processes. Per IP: password sign-in 5 a minute, sign-up 10 an hour,
+  magic-link, password-reset and verification mail 3 a minute each.
+- **Client IP:** `web` takes it from the header `CAIRN_CLIENT_IP_HEADER` names,
+  or from its socket, and sends it to `api` as `x-cairn-client-ip`, replacing
+  any value the client sent. The codenav instances use `cf-connecting-ip`.
 - `CAIRN_SECRET` is the Better Auth secret. Secrets stored in the database (§6.2)
   are encrypted with AES-256-GCM under a key derived from it with HKDF, so
   rotating `CAIRN_SECRET` signs everyone out and requires re-entering them.
-- **SSR:** the web server resolves the session per request by forwarding the
-  `Cookie` header to `/api/auth/get-session`. Responses rendered for a signed-in
-  user are `Cache-Control: private, no-store`.
+- **SSR:** the web server loads `/api/me` and the public settings once per
+  request with the visitor's `Cookie` header, and passes any refreshed session
+  cookie back in its own response. Pages rendered for a signed-in visitor, and
+  invite pages, are `Cache-Control: private, no-store`.
 
 ---
 
@@ -179,7 +186,8 @@ for their configuration; the settings form is generated from that schema.
 - `CAIRN_MAIL_ALLOWED_RECIPIENTS` (addresses or `@domain`, comma-separated)
   drops everything else and logs that it did. It is read from the environment
   only and applies whatever the configured driver, so staging cannot mail real
-  users even if someone changes its mail settings in the UI.
+  users even if someone changes its mail settings in the UI. On staging an
+  empty list delivers to no one.
 - Templates — invitation, magic link, email verification, password reset, test
   message — exist in every interface locale and render in the recipient's
   locale, or the site default for invitations. Each has an HTML and a plain-text
@@ -198,8 +206,9 @@ source is active.
 
 ## 7. Site settings
 
-Stored in `site_settings` (key → `jsonb`), each key validated by a Zod schema in
-`packages/contracts`.
+Stored in `site_settings` as one `jsonb` row per section (`site`,
+`registration`, `auth`, `mail`), each validated by a Zod schema in
+`packages/contracts` and merged over the defaults when read.
 
 | Key                 | Default             | Who   |
 | ------------------- | ------------------- | ----- |
@@ -212,8 +221,8 @@ Stored in `site_settings` (key → `jsonb`), each key validated by a Zod schema 
 | `mail`              | unset → environment | owner |
 
 `GET /api/settings/public` returns what anonymous pages need (title,
-description, locale, which sign-in methods are available, whether registration
-is open). Settings are read per request; there is no cache to invalidate yet.
+description, locale, which sign-in methods are available, the registration
+mode, whether mail can be sent). Settings are read per request; there is no cache to invalidate yet.
 
 ---
 
@@ -221,19 +230,20 @@ is open). Settings are read per request; there is no cache to invalidate yet.
 
 Better Auth serves `/api/auth/*`. Cairn adds:
 
-| Route                              | Who                      |
-| ---------------------------------- | ------------------------ |
-| `GET /api/me`                      | signed in                |
-| `PATCH /api/me`                    | signed in (name, locale) |
-| `GET /api/settings/public`         | anyone                   |
-| `GET`, `PATCH /api/settings`       | owner                    |
-| `PUT`, `DELETE /api/settings/mail` | owner, fresh session     |
-| `POST /api/settings/mail/test`     | owner                    |
-| `GET /api/members`                 | owner, moderator         |
-| `PATCH /api/members/:id`           | per §1 (role, status)    |
-| `GET`, `POST /api/invites`         | per §1                   |
-| `DELETE /api/invites/:id`          | per §1                   |
-| `GET /api/invites/:token`          | anyone                   |
+| Route                              | Who                                                            |
+| ---------------------------------- | -------------------------------------------------------------- |
+| `GET /api/me`                      | signed in                                                      |
+| `PATCH /api/me`                    | signed in (name, locale)                                       |
+| `GET /api/settings/public`         | anyone                                                         |
+| `GET /api/settings`                | owner                                                          |
+| `PATCH /api/settings`              | owner; fresh session to change registration or sign-in methods |
+| `PUT`, `DELETE /api/settings/mail` | owner, fresh session                                           |
+| `POST /api/settings/mail/test`     | owner                                                          |
+| `GET /api/members`                 | owner, moderator                                               |
+| `PATCH /api/members/:id`           | per §1 (role, status)                                          |
+| `GET`, `POST /api/invites`         | per §1                                                         |
+| `DELETE /api/invites/:id`          | per §1                                                         |
+| `GET /api/invites/:token`          | anyone                                                         |
 
 All declared with `zod-openapi`, so they appear in `/api/openapi.json`.
 
@@ -241,15 +251,16 @@ All declared with `zod-openapi`, so they appear in `/api/openapi.json`.
 
 ## 9. Pages
 
-| Path               | Contents                                                               |
-| ------------------ | ---------------------------------------------------------------------- |
-| `/sign-in`         | Available methods only; passkey offered first when the browser has one |
-| `/sign-up`         | Only when `registration.mode` is not `invite`                          |
-| `/invite/[token]`  | Who invited you and as what; choose password, magic link or GitHub     |
-| `/verify`          | Landing for email verification and magic links                         |
-| `/account`         | Name, locale, password, passkeys, linked GitHub, active sessions       |
-| `/studio/settings` | General, Registration and sign-in, Mail                                |
-| `/studio/members`  | Members (role, status, approve) and invitations                        |
+| Path               | Contents                                                         |
+| ------------------ | ---------------------------------------------------------------- |
+| `/sign-in`         | Available methods only; passkey and GitHub first                 |
+| `/sign-up`         | Only when `registration.mode` is not `invite`                    |
+| `/invite/[token]`  | Who invited you and as what; sign up with a password or GitHub   |
+| `/verify`          | Waiting for, resending and landing from the confirmation link    |
+| `/reset-password`  | Request a reset link, then choose a new password from it         |
+| `/account`         | Name, locale, password, passkeys, linked GitHub, active sessions |
+| `/studio/settings` | General, Registration and sign-in, Mail                          |
+| `/studio/members`  | Members (role, status, approve) and invitations                  |
 
 These are the first real pages, so they bring the base components from
 [design.md](./design.md): button, input, field with label/hint/error, select,
@@ -260,8 +271,11 @@ self-hosted woff2 subsets.
 
 ## 10. Data model changes
 
-- `user`: `role`, `status`, `locale`, `display_name` (Better Auth `additionalFields`).
-- Better Auth tables: `session`, `account`, `verification`, `passkey`, `rate_limit`.
+- `users`: `role`, `status`, `locale` (Better Auth `additionalFields`); the
+  display name is Better Auth's own `name`. A partial unique index allows one
+  `owner`.
+- Better Auth tables, renamed to plurals: `sessions`, `accounts`, `verifications`,
+  `passkeys`, `rate_limits`. Ids are `uuidv7()` from the database.
 - `invitations` (§4) and `audit_log` — `id, actor_id (nullable), actor_kind (user · cli · system), action, target_type, target_id, data jsonb, ip, created_at`.
 
 ---
